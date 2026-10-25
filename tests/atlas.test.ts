@@ -24,10 +24,25 @@ describe("Aseprite asset contract", () => {
       expect.arrayContaining(REQUIRED_TAGS),
     );
     for (const tag of atlas.meta.frameTags.filter((tag) =>
-      /^(dog|cat)-/.test(tag.name),
+      /^(dog|cat)-(down|up|left|right)$/.test(tag.name),
     )) {
       expect(tag.to - tag.from + 1).toBeGreaterThanOrEqual(4);
     }
+  });
+  it("accepts higher-resolution artwork without changing the collision-grid size", () => {
+    const atlas = exported();
+    const old = atlas.frames[0].frame.w;
+    const ratio = 128 / old;
+    atlas.meta.size.w *= ratio;
+    atlas.meta.size.h *= ratio;
+    for (const frame of atlas.frames) {
+      frame.frame.x *= ratio;
+      frame.frame.y *= ratio;
+      frame.frame.w = frame.frame.h = 128;
+    }
+    expect(validateAtlas(atlas).frames[0].frame.w).toBe(128);
+    atlas.frames[1].frame.h = 24;
+    expect(() => validateAtlas(atlas)).toThrow(/Frame/);
   });
   it("rejects missing animations, wrong filenames and trimmed frames", () => {
     const noDog = exported();
@@ -48,8 +63,9 @@ describe("Aseprite asset contract", () => {
     expect(data.readUInt32LE(0)).toBe(data.length);
     expect(data.readUInt16LE(4)).toBe(0xa5e0);
     expect(data.readUInt16LE(6)).toBe(atlas.frames.length);
-    expect(data.readUInt16LE(8)).toBe(24);
-    expect(data.readUInt16LE(10)).toBe(24);
+    const frameSize = atlas.frames[0].frame.w;
+    expect(data.readUInt16LE(8)).toBe(frameSize);
+    expect(data.readUInt16LE(10)).toBe(frameSize);
     expect(data.readUInt16LE(12)).toBe(32);
     let cursor = 128;
     let cels = 0;
@@ -66,7 +82,7 @@ describe("Aseprite asset contract", () => {
           expect(data.readUInt16LE(cursor + 13)).toBe(2); // compressed cel
           expect(
             inflateSync(data.subarray(cursor + 26, cursor + size)),
-          ).toHaveLength(24 * 24 * 4);
+          ).toHaveLength(frameSize * frameSize * 4);
           cels++;
         }
         if (type === 0x2018) tags = data.readUInt16LE(cursor + 6);

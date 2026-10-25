@@ -1,6 +1,8 @@
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { mkdirSync, readFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+
+import { addPresentation } from "./atlas-presentation.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 mkdirSync(new URL("../public/assets/", import.meta.url), { recursive: true });
@@ -37,4 +39,19 @@ if (!Array.isArray(atlas.frames) || !atlas.meta?.frameTags?.length) {
     "A exportação precisa de JSON Array e frame tags. Consulte art/README.md.",
   );
 }
+const layout = JSON.parse(
+  readFileSync(
+    new URL("../art/reference-layout.json", import.meta.url),
+    "utf8",
+  ),
+);
+addPresentation(
+  atlas,
+  readFileSync(new URL("../public/assets/world.png", import.meta.url)),
+  layout,
+);
+writeFileSync(
+  new URL("../public/assets/world.json", import.meta.url),
+  JSON.stringify(atlas, null, 2) + "\n",
+);
 console.log("Spritesheet e animações exportadas para public/assets/.");

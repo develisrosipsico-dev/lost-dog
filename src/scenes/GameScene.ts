@@ -28,6 +28,8 @@ export class GameScene extends Phaser.Scene {
   private helpOpen = false;
   private hidden = false;
   private ready = false;
+  private artScale = 2;
+  private mirrorXTags = new Set<string>();
 
   constructor() {
     super("Game");
@@ -59,11 +61,33 @@ export class GameScene extends Phaser.Scene {
           : "Confira as instruções em art/README.md.";
       return;
     }
+    this.artScale = TILE_SIZE / atlas.frames[0].frame.w;
+    this.mirrorXTags = new Set(atlas.meta.mirrorXTags ?? []);
     const texture = this.textures.get("world");
     for (const tag of atlas.meta.frameTags) {
       for (let index = tag.from; index <= tag.to; index++) {
         const { x, y, w, h } = atlas.frames[index].frame;
-        texture.add(`${tag.name}-${index - tag.from}`, 0, x, y, w, h);
+        const bounds = atlas.meta.contentBounds?.[String(index)];
+        const crop =
+          bounds &&
+          [
+            "grass",
+            "grass-flowers",
+            "wall",
+            "crate",
+            "house",
+            "fence",
+            "brick",
+            "bush",
+          ].includes(tag.name);
+        texture.add(
+          `${tag.name}-${index - tag.from}`,
+          0,
+          x + (crop ? bounds.x : 0),
+          y + (crop ? bounds.y : 0),
+          crop ? bounds.w : w,
+          crop ? bounds.h : h,
+        );
       }
     }
     for (const animation of this.anims.createFromAseprite("world")) {
@@ -72,9 +96,16 @@ export class GameScene extends Phaser.Scene {
     }
     for (let row = 0; row < ROWS; row++) {
       for (let col = 0; col < COLS; col++) {
+        const flowered =
+          (row * 7 + col * 11) % 13 === 0 && texture.has("grass-flowers-0");
         this.add
-          .image(col * TILE_SIZE + 24, row * TILE_SIZE + 24, "world", "grass-0")
-          .setScale(2)
+          .image(
+            col * TILE_SIZE + 24,
+            row * TILE_SIZE + 24,
+            "world",
+            flowered ? "grass-flowers-0" : "grass-0",
+          )
+          .setDisplaySize(TILE_SIZE, TILE_SIZE)
           .setDepth(-1);
       }
     }
@@ -233,7 +264,7 @@ export class GameScene extends Phaser.Scene {
               "world",
               `${name}-0`,
             )
-            .setScale(2)
+            .setDisplaySize(TILE_SIZE, TILE_SIZE)
             .setDepth(row * TILE_SIZE + 24);
       }
     }
@@ -248,7 +279,7 @@ export class GameScene extends Phaser.Scene {
       seen.add(owner);
       let object = this.objects.get(owner);
       if (!object) {
-        object = this.add.sprite(x, y, "world", frame).setScale(2);
+        object = this.add.sprite(x, y, "world", frame).setScale(this.artScale);
         this.objects.set(owner, object);
       }
       object.setPosition(x, y).setDepth(depth).setVisible(true);
@@ -269,17 +300,23 @@ export class GameScene extends Phaser.Scene {
           : 1,
       );
     }
-    for (const cat of model.enemies) {
+    const coats = ["cat", "cat-orange", "cat-siamese", "cat-calico"];
+    for (const [index, cat] of model.enemies.entries()) {
       if (cat.alive) {
-        const actor = sprite(cat, `cat-${cat.dir}-0`, cat.x, cat.y);
+        const variant = `${coats[index % coats.length]}-${cat.dir}`;
+        const animation = this.anims.exists(variant)
+          ? variant
+          : `cat-${cat.dir}`;
+        const actor = sprite(cat, `${animation}-0`, cat.x, cat.y);
+        actor.setFlipX(this.mirrorXTags.has(animation));
         if (model.state === "PLAYING" && !model.paused)
-          actor.play(`cat-${cat.dir}`, true);
+          actor.play(animation, true);
         else actor.stop();
       }
     }
     for (const bone of model.activeBombs) {
       sprite(bone, "bone-0", bone.x, bone.y).setScale(
-        2 + Math.sin(model.globalTimer * 16) * 0.15,
+        this.artScale * (1 + Math.sin(model.globalTimer * 16) * 0.075),
       );
     }
     for (const powerup of model.powerups) {

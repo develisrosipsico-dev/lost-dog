@@ -8,6 +8,11 @@ export interface AsepriteAtlas {
   }[];
   meta: {
     size: { w: number; h: number };
+    contentBounds?: Record<
+      string,
+      { x: number; y: number; w: number; h: number }
+    >;
+    mirrorXTags?: string[];
     frameTags: { name: string; from: number; to: number; direction: string }[];
   };
 }
@@ -46,6 +51,13 @@ export function validateAtlas(value: unknown): AsepriteAtlas {
       "A arte precisa ser exportada como Aseprite JSON Array com Tags.",
     );
   }
+  // Sprite resolution is independent from the fixed 48px collision grid.
+  const size = atlas.frames[0]?.frame.w;
+  if (!Number.isInteger(size) || size <= 0 || size > 256) {
+    throw new Error(
+      "O atlas precisa de frames quadrados entre 1 e 256 pixels.",
+    );
+  }
   for (const [index, frame] of atlas.frames.entries()) {
     const box = frame.frame;
     if (
@@ -53,8 +65,8 @@ export function validateAtlas(value: unknown): AsepriteAtlas {
       frame.rotated ||
       frame.trimmed ||
       !box ||
-      box.w !== 24 ||
-      box.h !== 24 ||
+      box.w !== size ||
+      box.h !== size ||
       !Number.isInteger(box.x) ||
       !Number.isInteger(box.y) ||
       box.x < 0 ||
@@ -64,7 +76,7 @@ export function validateAtlas(value: unknown): AsepriteAtlas {
       !(frame.duration > 0)
     ) {
       throw new Error(
-        `Frame ${index} inválido: use 24×24, nomes {frame}, sem trim ou rotação.`,
+        `Frame ${index} inválido: use frames quadrados uniformes, nomes {frame}, sem trim ou rotação.`,
       );
     }
   }

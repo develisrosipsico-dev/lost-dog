@@ -4,7 +4,7 @@ Jogo 2D de labirinto em **Phaser 3 + TypeScript**, inspirado em Bomberman. O cã
 
 A migração preserva a matriz **15×13**, tiles de **48 px**, resolução lógica **720×624**, corner-sliding, ossos com explosão em cruz e reação em cadeia, caixas, gatos, powerups, três vidas e 180 segundos. As partículas mantêm velocidade, gravidade e duração da versão original; agora são sprites do Phaser. A música e os efeitos continuam usando Web Audio.
 
-O antigo gerador de texturas foi substituído por **PNG + JSON de spritesheet Aseprite**, com animações direcionais e arte inicial editável em `art/world.aseprite`. As fontes e imagens são locais; o jogo não usa CDN, backend, banco de dados ou credenciais.
+O antigo gerador de texturas foi substituído por **PNG + JSON de spritesheet Aseprite**, com animações direcionais, cão branco e caramelo, quatro pelagens de gatos e arte editável em `art/world.aseprite`. As fontes e imagens são locais; o jogo não usa CDN, backend, banco de dados ou credenciais.
 
 ## Rodar no computador
 
@@ -58,7 +58,7 @@ Veja [art/README.md](art/README.md) para editar o documento, os nomes das tags, 
 npm run assets:export
 ```
 
-Os PNG/JSON prontos estão versionados. **Aseprite é opcional para jogar e desenvolver**; só é necessário para exportar edições pelo editor. A arte inicial é uma base gerada em pixels e salva no formato nativo editável, e pode ser substituída pelo artista.
+Os PNG/JSON prontos estão versionados. **Aseprite é opcional para jogar e desenvolver**; só é necessário para exportar edições pelo editor. A arte atual é uma adaptação da referência visual enviada, com fonte PNG e documento nativo editável. As variantes de gatos ainda usam uma pose por direção; os ciclos de caminhada do cão e do gato preto e branco têm quatro frames por direção.
 
 ## Estrutura
 

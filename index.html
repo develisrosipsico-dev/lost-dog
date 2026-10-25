@@ -1,1914 +1,369 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caminho de Volta: A Aventura do Cãozinho (Edição 16-Bit Deluxe)</title>
-  <link rel="stylesheet" href="./src/styles.css">
-  <style>
-    .font-retro { font-family: 'Press Start 2P', monospace; }
-    .font-friendly { font-family: 'Fredoka', sans-serif; }
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="data:," />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>
+      Caminho de Volta: A Aventura do Cãozinho (Edição 16-Bit Deluxe)
+    </title>
+    <link rel="stylesheet" href="./src/styles.css" />
+    <style>
+      .font-retro {
+        font-family: "Press Start 2P", monospace;
+      }
+      .font-friendly {
+        font-family: "Fredoka", sans-serif;
+      }
 
-    * {
-      user-select: none;
-      -webkit-user-select: none;
-      touch-action: manipulation;
-    }
+      * {
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: manipulation;
+      }
 
-    canvas {
-      image-rendering: pixelated;
-      image-rendering: crisp-edges;
-    }
+      canvas {
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+      }
 
-    /* Efeito CRT Scanlines e Vinheta */
-    .crt-overlay {
-      background: linear-gradient(
-        rgba(18, 16, 16, 0) 50%,
-        rgba(0, 0, 0, 0.32) 50%
-      ), radial-gradient(
-        circle at center,
-        transparent 65%,
-        rgba(0, 0, 0, 0.55) 100%
-      );
-      background-size: 100% 4px, 100% 100%;
-      pointer-events: none;
-    }
+      /* Efeito CRT Scanlines e Vinheta */
+      .crt-overlay {
+        background:
+          linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.32) 50%),
+          radial-gradient(
+            circle at center,
+            transparent 65%,
+            rgba(0, 0, 0, 0.55) 100%
+          );
+        background-size:
+          100% 4px,
+          100% 100%;
+        pointer-events: none;
+      }
 
-    /* Botões estilo controle de Super Nintendo */
-    .snes-btn {
-      box-shadow: inset 0 2px 0 rgba(255,255,255,0.35), 0 4px 0 rgba(0,0,0,0.5);
-      transition: transform 0.06s ease, box-shadow 0.06s ease;
-    }
-    .snes-btn:active {
-      transform: translateY(3px);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), 0 1px 0 rgba(0,0,0,0.5);
-    }
-  </style>
-</head>
-<body class="bg-stone-950 text-white min-h-screen flex flex-col items-center justify-between p-2 sm:p-3 select-none overflow-x-hidden font-friendly">
+      /* Botões estilo controle de Super Nintendo */
+      .snes-btn {
+        box-shadow:
+          inset 0 2px 0 rgba(255, 255, 255, 0.35),
+          0 4px 0 rgba(0, 0, 0, 0.5);
+        transition:
+          transform 0.06s ease,
+          box-shadow 0.06s ease;
+      }
+      .snes-btn:active {
+        transform: translateY(3px);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.2),
+          0 1px 0 rgba(0, 0, 0, 0.5);
+      }
+    </style>
+  </head>
+  <body
+    class="bg-stone-950 text-white min-h-screen flex flex-col items-center justify-between p-2 sm:p-3 select-none overflow-x-hidden font-friendly"
+  >
+    <!-- TOP HUD ESTILO 16-BIT DELUXE -->
+    <header class="w-full max-w-[720px] flex flex-col gap-1.5 mb-1.5">
+      <!-- Barra de Título e Controles de Sistema -->
+      <div
+        class="flex items-center justify-between w-full px-3 py-1.5 bg-gradient-to-r from-indigo-950 via-purple-950 to-indigo-950 border-2 border-amber-500/80 rounded-xl shadow-lg"
+      >
+        <div class="flex items-center gap-2">
+          <span class="text-xl drop-shadow">🐶</span>
+          <div>
+            <h1
+              class="text-xs sm:text-sm font-retro text-amber-300 tracking-wider drop-shadow-[0_2px_0_rgba(0,0,0,0.8)]"
+            >
+              AU-BERMAN
+              <span
+                class="text-[9px] bg-amber-500 text-stone-950 px-1.5 py-0.5 rounded font-bold align-middle"
+                >16-BIT</span
+              >
+            </h1>
+          </div>
+        </div>
 
-  <!-- TOP HUD ESTILO 16-BIT DELUXE -->
-  <header class="w-full max-w-[720px] flex flex-col gap-1.5 mb-1.5">
-    <!-- Barra de Título e Controles de Sistema -->
-    <div class="flex items-center justify-between w-full px-3 py-1.5 bg-gradient-to-r from-indigo-950 via-purple-950 to-indigo-950 border-2 border-amber-500/80 rounded-xl shadow-lg">
-      <div class="flex items-center gap-2">
-        <span class="text-xl drop-shadow">🐶</span>
-        <div>
-          <h1 class="text-xs sm:text-sm font-retro text-amber-300 tracking-wider drop-shadow-[0_2px_0_rgba(0,0,0,0.8)]">AU-BERMAN <span class="text-[9px] bg-amber-500 text-stone-950 px-1.5 py-0.5 rounded font-bold align-middle">16-BIT</span></h1>
+        <div class="flex items-center gap-1.5 sm:gap-2">
+          <!-- Botão Música BGM -->
+          <button
+            id="btn-bgm"
+            title="Música de Fundo"
+            class="snes-btn px-2 py-1 text-[10px] font-retro bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg flex items-center gap-1"
+          >
+            <span id="bgm-icon">🎵</span
+            ><span class="hidden md:inline">BGM</span>
+          </button>
+          <!-- Botão Efeitos Sonoros SFX -->
+          <button
+            id="btn-sfx"
+            title="Efeitos Sonoros"
+            class="snes-btn px-2 py-1 text-[10px] font-retro bg-amber-500 hover:bg-amber-400 text-stone-950 rounded-lg flex items-center gap-1"
+          >
+            <span id="sfx-icon">🔊</span
+            ><span class="hidden md:inline">SFX</span>
+          </button>
+          <!-- Botão Filtro CRT -->
+          <button
+            id="btn-crt"
+            title="Filtro TV Tubo CRT"
+            class="snes-btn px-2 py-1 text-[10px] font-retro bg-purple-600 hover:bg-purple-500 text-white rounded-lg flex items-center gap-1"
+          >
+            <span>📺</span><span class="hidden sm:inline">CRT</span>
+          </button>
+          <!-- Botão Ajuda -->
+          <button
+            id="btn-help"
+            title="Como Jogar"
+            class="snes-btn px-2.5 py-1 text-[10px] font-retro bg-stone-700 hover:bg-stone-600 text-amber-300 rounded-lg"
+          >
+            ?
+          </button>
         </div>
       </div>
 
-      <div class="flex items-center gap-1.5 sm:gap-2">
-        <!-- Botão Música BGM -->
-        <button id="btn-bgm" title="Música de Fundo" class="snes-btn px-2 py-1 text-[10px] font-retro bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg flex items-center gap-1">
-          <span id="bgm-icon">🎵</span><span class="hidden md:inline">BGM</span>
-        </button>
-        <!-- Botão Efeitos Sonoros SFX -->
-        <button id="btn-sfx" title="Efeitos Sonoros" class="snes-btn px-2 py-1 text-[10px] font-retro bg-amber-500 hover:bg-amber-400 text-stone-950 rounded-lg flex items-center gap-1">
-          <span id="sfx-icon">🔊</span><span class="hidden md:inline">SFX</span>
-        </button>
-        <!-- Botão Filtro CRT -->
-        <button id="btn-crt" title="Filtro TV Tubo CRT" class="snes-btn px-2 py-1 text-[10px] font-retro bg-purple-600 hover:bg-purple-500 text-white rounded-lg flex items-center gap-1">
-          <span>📺</span><span class="hidden sm:inline">CRT</span>
-        </button>
-        <!-- Botão Ajuda -->
-        <button id="btn-help" title="Como Jogar" class="snes-btn px-2.5 py-1 text-[10px] font-retro bg-stone-700 hover:bg-stone-600 text-amber-300 rounded-lg">
-          ?
-        </button>
-      </div>
-    </div>
-
-    <!-- Painel de Status SNES -->
-    <div class="w-full grid grid-cols-5 gap-1.5 text-center bg-stone-900/95 border-2 border-stone-700 rounded-xl p-1.5 text-xs font-retro shadow-inner">
-      <div class="flex flex-col items-center bg-stone-950/80 py-1 rounded-lg border border-stone-800">
-        <span class="text-[9px] text-stone-400">VIDAS</span>
-        <div id="hud-lives" class="text-rose-500 text-xs sm:text-sm mt-0.5 tracking-tighter">❤️❤️❤️</div>
-      </div>
-      <div class="flex flex-col items-center bg-stone-950/80 py-1 rounded-lg border border-stone-800">
-        <span class="text-[9px] text-stone-400">ALCANCE</span>
-        <div class="flex items-center gap-1 text-amber-400 text-xs sm:text-sm mt-0.5">
-          <span>🦴</span><span id="hud-range">1</span>
+      <!-- Painel de Status SNES -->
+      <div
+        class="w-full grid grid-cols-5 gap-1.5 text-center bg-stone-900/95 border-2 border-stone-700 rounded-xl p-1.5 text-xs font-retro shadow-inner"
+      >
+        <div
+          class="flex flex-col items-center bg-stone-950/80 py-1 rounded-lg border border-stone-800"
+        >
+          <span class="text-[9px] text-stone-400">VIDAS</span>
+          <div
+            id="hud-lives"
+            class="text-rose-500 text-xs sm:text-sm mt-0.5 tracking-tighter"
+          >
+            ❤️❤️❤️
+          </div>
+        </div>
+        <div
+          class="flex flex-col items-center bg-stone-950/80 py-1 rounded-lg border border-stone-800"
+        >
+          <span class="text-[9px] text-stone-400">ALCANCE</span>
+          <div
+            class="flex items-center gap-1 text-amber-400 text-xs sm:text-sm mt-0.5"
+          >
+            <span>🦴</span><span id="hud-range">1</span>
+          </div>
+        </div>
+        <div
+          class="flex flex-col items-center bg-stone-950/80 py-1 rounded-lg border border-stone-800"
+        >
+          <span class="text-[9px] text-stone-400">OSSOS</span>
+          <div
+            class="flex items-center gap-1 text-emerald-400 text-xs sm:text-sm mt-0.5"
+          >
+            <span>🍗</span><span id="hud-bombs">1</span>
+          </div>
+        </div>
+        <div
+          class="flex flex-col items-center bg-stone-950/80 py-1 rounded-lg border border-stone-800"
+        >
+          <span class="text-[9px] text-stone-400">PATAS</span>
+          <div
+            class="flex items-center gap-1 text-cyan-400 text-xs sm:text-sm mt-0.5"
+          >
+            <span>👟</span><span id="hud-speed">1x</span>
+          </div>
+        </div>
+        <div
+          class="flex flex-col items-center bg-stone-950/80 py-1 rounded-lg border border-stone-800"
+        >
+          <span class="text-[9px] text-stone-400">TEMPO</span>
+          <div id="hud-time" class="text-yellow-300 text-xs sm:text-sm mt-0.5">
+            180s
+          </div>
         </div>
       </div>
-      <div class="flex flex-col items-center bg-stone-950/80 py-1 rounded-lg border border-stone-800">
-        <span class="text-[9px] text-stone-400">OSSOS</span>
-        <div class="flex items-center gap-1 text-emerald-400 text-xs sm:text-sm mt-0.5">
-          <span>🍗</span><span id="hud-bombs">1</span>
+    </header>
+
+    <!-- ÁREA DO CANVAS 16-BIT -->
+    <main
+      class="relative w-full max-w-[720px] flex items-center justify-center"
+    >
+      <div
+        id="canvas-wrapper"
+        class="relative w-full rounded-2xl overflow-hidden border-4 border-amber-700 bg-stone-950 shadow-[0_0_35px_rgba(245,158,11,0.2)]"
+      >
+        <!-- Resolução interna 720x624 (15x13 tiles de 48x48 pixels) -->
+        <div
+          id="game"
+          role="application"
+          aria-label="Labirinto do cãozinho — use WASD ou setas para mover e espaço para soltar osso"
+        ></div>
+
+        <!-- Camada CRT Scanlines (Ativada por padrão) -->
+        <div id="crt-layer" class="crt-overlay absolute inset-0 z-10"></div>
+
+        <!-- Tela Inicial / Vitória / Derrota -->
+        <div
+          id="game-overlay"
+          class="absolute inset-0 bg-stone-950/88 flex flex-col items-center justify-center p-6 text-center backdrop-blur-sm z-20"
+        >
+          <div
+            id="overlay-icon"
+            class="text-6xl mb-3 animate-bounce drop-shadow-[0_4px_8px_rgba(251,191,36,0.5)]"
+          >
+            🏡
+          </div>
+          <div
+            class="inline-block px-3 py-1 mb-2 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 font-retro text-[10px]"
+          >
+            EDIÇÃO 16-BIT DELUXE
+          </div>
+          <h2
+            id="overlay-title"
+            class="text-lg sm:text-2xl font-retro text-amber-400 mb-3 drop-shadow-[0_3px_0_rgba(0,0,0,1)]"
+          >
+            CAMINHO DE VOLTA
+          </h2>
+          <p
+            id="overlay-desc"
+            class="text-sm sm:text-base text-stone-200 max-w-md mb-6 leading-relaxed"
+          >
+            Ajude o cãozinho perdido no <b>canto inferior esquerdo</b> a voltar
+            para sua casinha no <b>canto superior direito</b>! Solte ossinhos
+            apitadores para quebrar caixas, coletar itens e espantar os gatos de
+            beco!
+          </p>
+          <button
+            id="btn-start"
+            disabled
+            class="snes-btn px-7 py-3.5 bg-gradient-to-b from-amber-400 to-amber-600 text-stone-950 font-retro text-xs sm:text-sm rounded-xl font-bold tracking-wider hover:brightness-110"
+          >
+            CARREGANDO ARTE…
+          </button>
+        </div>
+
+        <!-- Modal de Instruções -->
+        <div
+          id="help-modal"
+          class="hidden absolute inset-0 bg-stone-950/95 flex flex-col items-center justify-center p-5 z-30"
+        >
+          <h3 class="text-sm sm:text-base font-retro text-amber-400 mb-4">
+            MANUAL DO CÃOZINHO (16-BIT)
+          </h3>
+          <div
+            class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-left max-w-md mb-5 text-stone-200 bg-stone-900 p-4 rounded-xl border border-stone-700"
+          >
+            <div class="flex items-center gap-2">
+              <span class="text-lg">🕹️</span>
+              <span><b>Andar:</b> Setas, WASD ou D-Pad</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-lg">📢</span>
+              <span><b>Soltar Osso:</b> Espaço ou Botão B</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-lg">🦴</span>
+              <span><b>Osso Dourado:</b> +1 Raio do Latido</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-lg">👟</span>
+              <span><b>Tênis Mastigado:</b> +Velocidade</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-lg">🍗</span>
+              <span><b>Petisco Real:</b> +1 Osso Simultâneo</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-lg">🐱</span>
+              <span><b>Gatos de Beco:</b> Espante com o latido!</span>
+            </div>
+          </div>
+          <p class="text-xs text-amber-300 mb-5 text-center max-w-sm">
+            Dica Deluxe: O cãozinho desliza suavemente nas quinas dos pilares
+            para facilitar suas curvas!
+          </p>
+          <button
+            id="btn-close-help"
+            class="snes-btn px-6 py-2.5 bg-amber-500 text-stone-950 font-retro text-xs rounded-lg font-bold"
+          >
+            CONTINUAR
+          </button>
         </div>
       </div>
-      <div class="flex flex-col items-center bg-stone-950/80 py-1 rounded-lg border border-stone-800">
-        <span class="text-[9px] text-stone-400">PATAS</span>
-        <div class="flex items-center gap-1 text-cyan-400 text-xs sm:text-sm mt-0.5">
-          <span>👟</span><span id="hud-speed">1x</span>
+    </main>
+
+    <!-- CONTROLES TÁTEIS ESTILO SUPER NINTENDO -->
+    <footer
+      class="w-full max-w-[720px] flex items-center justify-between px-4 py-2 mt-1"
+    >
+      <!-- D-Pad Cruz Clássica SNES -->
+      <div
+        class="relative w-32 h-32 sm:w-36 sm:h-36 flex items-center justify-center bg-stone-800/80 rounded-full border-2 border-stone-700 p-2 shadow-inner"
+      >
+        <div class="grid grid-cols-3 grid-rows-3 w-full h-full">
+          <div class="col-start-2 row-start-1 flex justify-center">
+            <button
+              id="btn-up"
+              class="snes-btn w-full h-full bg-stone-700 active:bg-amber-500 active:text-stone-950 rounded-t-lg border border-stone-600 flex items-center justify-center text-base"
+            >
+              ▲
+            </button>
+          </div>
+          <div class="col-start-1 row-start-2 flex justify-center">
+            <button
+              id="btn-left"
+              class="snes-btn w-full h-full bg-stone-700 active:bg-amber-500 active:text-stone-950 rounded-l-lg border border-stone-600 flex items-center justify-center text-base"
+            >
+              ◀
+            </button>
+          </div>
+          <div
+            class="col-start-2 row-start-2 bg-stone-800 flex items-center justify-center"
+          >
+            <div class="w-4 h-4 rounded-full bg-stone-900 shadow-inner"></div>
+          </div>
+          <div class="col-start-3 row-start-2 flex justify-center">
+            <button
+              id="btn-right"
+              class="snes-btn w-full h-full bg-stone-700 active:bg-amber-500 active:text-stone-950 rounded-r-lg border border-stone-600 flex items-center justify-center text-base"
+            >
+              ▶
+            </button>
+          </div>
+          <div class="col-start-2 row-start-3 flex justify-center">
+            <button
+              id="btn-down"
+              class="snes-btn w-full h-full bg-stone-700 active:bg-amber-500 active:text-stone-950 rounded-b-lg border border-stone-600 flex items-center justify-center text-base"
+            >
+              ▼
+            </button>
+          </div>
         </div>
       </div>
-      <div class="flex flex-col items-center bg-stone-950/80 py-1 rounded-lg border border-stone-800">
-        <span class="text-[9px] text-stone-400">TEMPO</span>
-        <div id="hud-time" class="text-yellow-300 text-xs sm:text-sm mt-0.5">180s</div>
-      </div>
-    </div>
-  </header>
 
-  <!-- ÁREA DO CANVAS 16-BIT -->
-  <main class="relative w-full max-w-[720px] flex items-center justify-center">
-    <div id="canvas-wrapper" class="relative w-full rounded-2xl overflow-hidden border-4 border-amber-700 bg-stone-950 shadow-[0_0_35px_rgba(245,158,11,0.2)]">
-      <!-- Resolução interna 720x624 (15x13 tiles de 48x48 pixels) -->
-      <canvas id="gameCanvas" width="720" height="624" class="block w-full h-auto"></canvas>
-
-      <!-- Camada CRT Scanlines (Ativada por padrão) -->
-      <div id="crt-layer" class="crt-overlay absolute inset-0 z-10"></div>
-
-      <!-- Tela Inicial / Vitória / Derrota -->
-      <div id="game-overlay" class="absolute inset-0 bg-stone-950/88 flex flex-col items-center justify-center p-6 text-center backdrop-blur-sm z-20">
-        <div id="overlay-icon" class="text-6xl mb-3 animate-bounce drop-shadow-[0_4px_8px_rgba(251,191,36,0.5)]">🏡</div>
-        <div class="inline-block px-3 py-1 mb-2 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 font-retro text-[10px]">
-          EDIÇÃO 16-BIT DELUXE
-        </div>
-        <h2 id="overlay-title" class="text-lg sm:text-2xl font-retro text-amber-400 mb-3 drop-shadow-[0_3px_0_rgba(0,0,0,1)]">
-          CAMINHO DE VOLTA
-        </h2>
-        <p id="overlay-desc" class="text-sm sm:text-base text-stone-200 max-w-md mb-6 leading-relaxed">
-          Ajude o cãozinho perdido no <b>canto inferior esquerdo</b> a voltar para sua casinha no <b>canto superior direito</b>! Solte ossinhos apitadores para quebrar caixas, coletar itens e espantar os gatos de beco!
-        </p>
-        <button id="btn-start" class="snes-btn px-7 py-3.5 bg-gradient-to-b from-amber-400 to-amber-600 text-stone-950 font-retro text-xs sm:text-sm rounded-xl font-bold tracking-wider hover:brightness-110">
-          INICIAR AVENTURA
-        </button>
+      <!-- Dica Central Desktop -->
+      <div
+        class="hidden md:flex flex-col items-center text-stone-400 text-[10px] font-retro gap-1"
+      >
+        <span>[WASD / SETAS] MOVER</span>
+        <span>[ESPAÇO] SOLTAR OSSO APITADOR</span>
       </div>
 
-      <!-- Modal de Instruções -->
-      <div id="help-modal" class="hidden absolute inset-0 bg-stone-950/95 flex flex-col items-center justify-center p-5 z-30">
-        <h3 class="text-sm sm:text-base font-retro text-amber-400 mb-4">MANUAL DO CÃOZINHO (16-BIT)</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-left max-w-md mb-5 text-stone-200 bg-stone-900 p-4 rounded-xl border border-stone-700">
-          <div class="flex items-center gap-2"><span class="text-lg">🕹️</span> <span><b>Andar:</b> Setas, WASD ou D-Pad</span></div>
-          <div class="flex items-center gap-2"><span class="text-lg">📢</span> <span><b>Soltar Osso:</b> Espaço ou Botão B</span></div>
-          <div class="flex items-center gap-2"><span class="text-lg">🦴</span> <span><b>Osso Dourado:</b> +1 Raio do Latido</span></div>
-          <div class="flex items-center gap-2"><span class="text-lg">👟</span> <span><b>Tênis Mastigado:</b> +Velocidade</span></div>
-          <div class="flex items-center gap-2"><span class="text-lg">🍗</span> <span><b>Petisco Real:</b> +1 Osso Simultâneo</span></div>
-          <div class="flex items-center gap-2"><span class="text-lg">🐱</span> <span><b>Gatos de Beco:</b> Espante com o latido!</span></div>
-        </div>
-        <p class="text-xs text-amber-300 mb-5 text-center max-w-sm">
-          Dica Deluxe: O cãozinho desliza suavemente nas quinas dos pilares para facilitar suas curvas!
-        </p>
-        <button id="btn-close-help" class="snes-btn px-6 py-2.5 bg-amber-500 text-stone-950 font-retro text-xs rounded-lg font-bold">
-          CONTINUAR
-        </button>
-      </div>
-    </div>
-  </main>
-
-  <!-- CONTROLES TÁTEIS ESTILO SUPER NINTENDO -->
-  <footer class="w-full max-w-[720px] flex items-center justify-between px-4 py-2 mt-1">
-    <!-- D-Pad Cruz Clássica SNES -->
-    <div class="relative w-32 h-32 sm:w-36 sm:h-36 flex items-center justify-center bg-stone-800/80 rounded-full border-2 border-stone-700 p-2 shadow-inner">
-      <div class="grid grid-cols-3 grid-rows-3 w-full h-full">
-        <div class="col-start-2 row-start-1 flex justify-center">
-          <button id="btn-up" class="snes-btn w-full h-full bg-stone-700 active:bg-amber-500 active:text-stone-950 rounded-t-lg border border-stone-600 flex items-center justify-center text-base">▲</button>
-        </div>
-        <div class="col-start-1 row-start-2 flex justify-center">
-          <button id="btn-left" class="snes-btn w-full h-full bg-stone-700 active:bg-amber-500 active:text-stone-950 rounded-l-lg border border-stone-600 flex items-center justify-center text-base">◀</button>
-        </div>
-        <div class="col-start-2 row-start-2 bg-stone-800 flex items-center justify-center">
-          <div class="w-4 h-4 rounded-full bg-stone-900 shadow-inner"></div>
-        </div>
-        <div class="col-start-3 row-start-2 flex justify-center">
-          <button id="btn-right" class="snes-btn w-full h-full bg-stone-700 active:bg-amber-500 active:text-stone-950 rounded-r-lg border border-stone-600 flex items-center justify-center text-base">▶</button>
-        </div>
-        <div class="col-start-2 row-start-3 flex justify-center">
-          <button id="btn-down" class="snes-btn w-full h-full bg-stone-700 active:bg-amber-500 active:text-stone-950 rounded-b-lg border border-stone-600 flex items-center justify-center text-base">▼</button>
+      <!-- Botão de Ação SNES Colorido -->
+      <div
+        class="flex items-center gap-3 bg-stone-800/80 px-4 py-3 rounded-full border-2 border-stone-700 shadow-inner"
+      >
+        <div class="flex flex-col items-center">
+          <button
+            id="btn-bark"
+            class="snes-btn w-20 h-20 sm:w-22 sm:h-22 rounded-full bg-gradient-to-b from-rose-500 to-red-700 border-4 border-amber-300 flex flex-col items-center justify-center shadow-xl active:brightness-110"
+          >
+            <span class="text-2xl drop-shadow">🦴</span>
+            <span
+              class="text-[9px] font-retro text-white font-bold mt-1 tracking-tighter"
+              >LATIR!</span
+            >
+          </button>
         </div>
       </div>
-    </div>
+    </footer>
 
-    <!-- Dica Central Desktop -->
-    <div class="hidden md:flex flex-col items-center text-stone-400 text-[10px] font-retro gap-1">
-      <span>[WASD / SETAS] MOVER</span>
-      <span>[ESPAÇO] SOLTAR OSSO APITADOR</span>
-    </div>
-
-    <!-- Botão de Ação SNES Colorido -->
-    <div class="flex items-center gap-3 bg-stone-800/80 px-4 py-3 rounded-full border-2 border-stone-700 shadow-inner">
-      <div class="flex flex-col items-center">
-        <button id="btn-bark" class="snes-btn w-20 h-20 sm:w-22 sm:h-22 rounded-full bg-gradient-to-b from-rose-500 to-red-700 border-4 border-amber-300 flex flex-col items-center justify-center shadow-xl active:brightness-110">
-          <span class="text-2xl drop-shadow">🦴</span>
-          <span class="text-[9px] font-retro text-white font-bold mt-1 tracking-tighter">LATIR!</span>
-        </button>
-      </div>
-    </div>
-  </footer>
-
-  <script>
-    /**
-     * ============================================================================
-     * 1. SINTETIZADOR DE ÁUDIO 16-BIT & MÚSICA CHIPTUNE PROCEDURAL (Web Audio API)
-     * ============================================================================
-     */
-    class RetroAudioEngine {
-      constructor() {
-        this.ctx = null;
-        this.sfxMuted = false;
-        this.bgmPlaying = false;
-        this.bgmEnabled = true;
-        this.bgmStep = 0;
-        this.bgmInterval = null;
-      }
-
-      init() {
-        if (!this.ctx) {
-          const AudioCtx = window.AudioContext || window.webkitAudioContext;
-          this.ctx = new AudioCtx();
-        }
-        if (this.ctx.state === 'suspended') {
-          this.ctx.resume();
-        }
-      }
-
-      toggleSFX() {
-        this.sfxMuted = !this.sfxMuted;
-        return !this.sfxMuted;
-      }
-
-      toggleBGM() {
-        this.init();
-        this.bgmEnabled = !this.bgmEnabled;
-        if (this.bgmEnabled) {
-          this.startBGM();
-        } else {
-          this.stopBGM();
-        }
-        return this.bgmEnabled;
-      }
-
-      startBGM() {
-        if (!this.bgmEnabled || this.bgmInterval) return;
-        this.init();
-        // Melodia alegre estilo SNES Bomberman (em Dó Maior / Lá menor)
-        const melody = [
-          523.25, 659.25, 783.99, 659.25, 587.33, 698.46, 659.25, 523.25,
-          440.00, 523.25, 659.25, 523.25, 493.88, 587.33, 523.25, 392.00
-        ];
-        const bass = [
-          130.81, 196.00, 130.81, 196.00, 146.83, 220.00, 130.81, 196.00,
-          110.00, 164.81, 110.00, 164.81, 98.00,  146.83, 130.81, 196.00
-        ];
-
-        this.bgmInterval = setInterval(() => {
-          if (!this.bgmEnabled || !this.ctx || this.ctx.state !== 'running') return;
-          const mFreq = melody[this.bgmStep % melody.length];
-          const bFreq = bass[this.bgmStep % bass.length];
-
-          // Canal Lead (Square suave)
-          this.playNote(mFreq, 'square', 0.14, 0.028);
-          // Canal Bass (Triangle encorpado)
-          if (this.bgmStep % 2 === 0) {
-            this.playNote(bFreq, 'triangle', 0.24, 0.05);
-          }
-          this.bgmStep++;
-        }, 185);
-      }
-
-      stopBGM() {
-        if (this.bgmInterval) {
-          clearInterval(this.bgmInterval);
-          this.bgmInterval = null;
-        }
-      }
-
-      playNote(freq, type, duration, vol) {
-        try {
-          const t = this.ctx.currentTime;
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.type = type;
-          osc.frequency.setValueAtTime(freq, t);
-          gain.gain.setValueAtTime(vol, t);
-          gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.start(t);
-          osc.stop(t + duration);
-        } catch (e) {}
-      }
-
-      playSqueak() {
-        if (this.sfxMuted) return;
-        this.init();
-        try {
-          const t = this.ctx.currentTime;
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(650, t);
-          osc.frequency.exponentialRampToValueAtTime(1450, t + 0.09);
-          osc.frequency.exponentialRampToValueAtTime(900, t + 0.18);
-          gain.gain.setValueAtTime(0.14, t);
-          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.start(t);
-          osc.stop(t + 0.18);
-        } catch (e) {}
-      }
-
-      playSonicBark() {
-        if (this.sfxMuted) return;
-        this.init();
-        try {
-          const t = this.ctx.currentTime;
-          // "AU!" duplo potente + onda de impacto
-          [0, 0.11].forEach((offset, idx) => {
-            const osc = this.ctx.createOscillator();
-            const gain = this.ctx.createGain();
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(idx === 0 ? 320 : 380, t + offset);
-            osc.frequency.exponentialRampToValueAtTime(95, t + offset + 0.22);
-            gain.gain.setValueAtTime(0.22, t + offset);
-            gain.gain.exponentialRampToValueAtTime(0.001, t + offset + 0.24);
-            osc.connect(gain);
-            gain.connect(this.ctx.destination);
-            osc.start(t + offset);
-            osc.stop(t + offset + 0.24);
-          });
-
-          // Ruído branco filtrado para explosão sônica
-          const bufferSize = this.ctx.sampleRate * 0.32;
-          const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-          const data = buffer.getChannelData(0);
-          for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-
-          const noise = this.ctx.createBufferSource();
-          noise.buffer = buffer;
-          const filter = this.ctx.createBiquadFilter();
-          filter.type = 'bandpass';
-          filter.frequency.setValueAtTime(600, t);
-          filter.frequency.exponentialRampToValueAtTime(140, t + 0.32);
-
-          const nGain = this.ctx.createGain();
-          nGain.gain.setValueAtTime(0.22, t);
-          nGain.gain.exponentialRampToValueAtTime(0.005, t + 0.32);
-
-          noise.connect(filter);
-          filter.connect(nGain);
-          nGain.connect(this.ctx.destination);
-          noise.start(t);
-          noise.stop(t + 0.32);
-        } catch (e) {}
-      }
-
-      playPowerup() {
-        if (this.sfxMuted) return;
-        this.init();
-        const notes = [523.25, 659.25, 783.99, 1046.50];
-        notes.forEach((f, i) => {
-          setTimeout(() => this.playNote(f, 'square', 0.09, 0.1), i * 55);
-        });
-      }
-
-      playCatMeow() {
-        if (this.sfxMuted) return;
-        this.init();
-        try {
-          const t = this.ctx.currentTime;
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(850, t);
-          osc.frequency.exponentialRampToValueAtTime(1200, t + 0.08);
-          osc.frequency.exponentialRampToValueAtTime(480, t + 0.28);
-          gain.gain.setValueAtTime(0.15, t);
-          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.start(t);
-          osc.stop(t + 0.28);
-        } catch (e) {}
-      }
-
-      playHurt() {
-        if (this.sfxMuted) return;
-        this.init();
-        [240, 170, 120].forEach((f, i) => {
-          setTimeout(() => this.playNote(f, 'sawtooth', 0.12, 0.18), i * 65);
-        });
-      }
-
-      playVictory() {
-        if (this.sfxMuted) return;
-        this.init();
-        const fanfare = [523.25, 659.25, 783.99, 1046.50, 783.99, 1046.50];
-        const times =   [0,      110,    220,    330,     480,    620];
-        fanfare.forEach((f, i) => {
-          setTimeout(() => this.playNote(f, 'square', 0.22, 0.14), times[i]);
-        });
-      }
-    }
-
-    /**
-     * ============================================================================
-     * 2. GERADOR DE TEXTURAS E SPRITES 16-BIT OFFSCREEN (Tile Atlas Procedural)
-     * ============================================================================
-     */
-    const COLS = 15;
-    const ROWS = 13;
-    const TILE_SIZE = 48; // 15*48 = 720, 13*48 = 624
-
-    const TILE = {
-      EMPTY: 0,
-      WALL_SOLID: 1,
-      BOX_CRATE: 2,
-      GOAL_HOUSE: 3
-    };
-
-    const POWERUP = {
-      SPEED: 'speed',
-      RANGE: 'range',
-      BOMB_COUNT: 'bomb'
-    };
-
-    class SpriteAtlas16Bit {
-      constructor() {
-        this.tiles = {};
-        this.generateAllTiles();
-      }
-
-      createCanvas(w, h) {
-        const c = document.createElement('canvas');
-        c.width = w;
-        c.height = h;
-        return c;
-      }
-
-      generateAllTiles() {
-        // 1. Grama Clara & Escura com flores e pedrinhas (perspectiva SNES)
-        this.tiles.grassLight = this.createGrassTile('#2e7d32', '#388e3c', '#1b5e20', true);
-        this.tiles.grassDark  = this.createGrassTile('#256628', '#2e7d32', '#174d1b', false);
-
-        // 2. Pilar de Pedra 3/4 com Musgo e Relevo 16-Bit
-        this.tiles.pillarWall = this.createStonePillarTile();
-
-        // 3. Caixa de Madeira / Papelão Reforçada 3/4
-        this.tiles.crateBox = this.createWoodenCrateTile();
-      }
-
-      createGrassTile(baseColor, highlightColor, shadowColor, hasFlower) {
-        const c = this.createCanvas(TILE_SIZE, TILE_SIZE);
-        const ctx = c.getContext('2d');
-
-        // Base
-        ctx.fillStyle = baseColor;
-        ctx.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
-
-        // Textura pontilhada sutil
-        ctx.fillStyle = shadowColor;
-        for (let y = 2; y < TILE_SIZE; y += 8) {
-          for (let x = (y % 16 === 0 ? 4 : 0); x < TILE_SIZE; x += 12) {
-            ctx.fillRect(x, y, 2, 2);
-          }
-        }
-
-        // Tufos de grama estilo pixel art
-        const tufts = [
-          { x: 8, y: 12 }, { x: 32, y: 18 }, { x: 16, y: 36 }, { x: 38, y: 40 }
-        ];
-        tufts.forEach(t => {
-          ctx.fillStyle = highlightColor;
-          ctx.fillRect(t.x, t.y, 2, 5);
-          ctx.fillRect(t.x - 2, t.y + 2, 2, 3);
-          ctx.fillRect(t.x + 2, t.y + 1, 2, 4);
-        });
-
-        // Florzinha campestre em alguns blocos
-        if (hasFlower) {
-          const fx = 26, fy = 26;
-          ctx.fillStyle = '#fef08a';
-          ctx.fillRect(fx - 2, fy, 6, 2);
-          ctx.fillRect(fx, fy - 2, 2, 6);
-          ctx.fillStyle = '#f97316';
-          ctx.fillRect(fx, fy, 2, 2);
-        }
-
-        return c;
-      }
-
-      createStonePillarTile() {
-        const c = this.createCanvas(TILE_SIZE, TILE_SIZE);
-        const ctx = c.getContext('2d');
-
-        // Base escura do bloco
-        ctx.fillStyle = '#1e293b';
-        ctx.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
-
-        // Topo do pilar (perspectiva 3/4 superior mais clara)
-        ctx.fillStyle = '#64748b';
-        ctx.fillRect(2, 2, TILE_SIZE - 4, TILE_SIZE - 14);
-
-        // Borda chanfrada iluminada do topo
-        ctx.fillStyle = '#94a3b8';
-        ctx.fillRect(2, 2, TILE_SIZE - 4, 3);
-        ctx.fillRect(2, 2, 3, TILE_SIZE - 14);
-
-        // Face frontal inferior do pilar (sombreada)
-        ctx.fillStyle = '#475569';
-        ctx.fillRect(2, TILE_SIZE - 12, TILE_SIZE - 4, 10);
-
-        // Divisórias dos tijolos
-        ctx.fillStyle = '#334155';
-        ctx.fillRect(2, TILE_SIZE - 13, TILE_SIZE - 4, 2);
-        ctx.fillRect(TILE_SIZE / 2, TILE_SIZE - 12, 2, 10);
-        ctx.fillRect(14, 16, TILE_SIZE - 28, 2);
-
-        // Detalhe de escudo/entalhe no topo do pilar
-        ctx.fillStyle = '#475569';
-        ctx.fillRect(12, 8, TILE_SIZE - 24, 16);
-        ctx.fillStyle = '#cbd5e1';
-        ctx.fillRect(14, 10, TILE_SIZE - 28, 2);
-
-        // Musgo verde 16-bit crescendo nas frestas
-        ctx.fillStyle = '#4ade80';
-        ctx.fillRect(4, 4, 6, 3);
-        ctx.fillRect(4, 7, 3, 3);
-        ctx.fillStyle = '#22c55e';
-        ctx.fillRect(TILE_SIZE - 11, TILE_SIZE - 14, 7, 4);
-        ctx.fillRect(TILE_SIZE - 8, TILE_SIZE - 10, 4, 3);
-
-        return c;
-      }
-
-      createWoodenCrateTile() {
-        const c = this.createCanvas(TILE_SIZE, TILE_SIZE);
-        const ctx = c.getContext('2d');
-
-        // Sombra de contorno
-        ctx.fillStyle = '#451a03';
-        ctx.fillRect(3, 3, TILE_SIZE - 6, TILE_SIZE - 5);
-
-        // Topo da caixa 3/4 (iluminado)
-        ctx.fillStyle = '#d97706';
-        ctx.fillRect(5, 5, TILE_SIZE - 10, TILE_SIZE - 18);
-
-        // Frente da caixa 3/4 (mais escura)
-        ctx.fillStyle = '#b45309';
-        ctx.fillRect(5, TILE_SIZE - 13, TILE_SIZE - 10, 8);
-
-        // Tábuas horizontais e veios da madeira
-        ctx.fillStyle = '#92400e';
-        ctx.fillRect(5, 14, TILE_SIZE - 10, 2);
-        ctx.fillRect(5, 24, TILE_SIZE - 10, 2);
-        ctx.fillRect(5, TILE_SIZE - 14, TILE_SIZE - 10, 2);
-
-        // Moldura reforçada e travessão diagonal
-        ctx.strokeStyle = '#f59e0b';
-        ctx.lineWidth = 3;
-        ctx.strokeRect(6.5, 6.5, TILE_SIZE - 13, TILE_SIZE - 19);
-
-        // Fita adesiva / faixa central de encomenda
-        ctx.fillStyle = '#fef08a';
-        ctx.fillRect(TILE_SIZE / 2 - 4, 5, 8, TILE_SIZE - 10);
-        ctx.fillStyle = '#eab308';
-        ctx.fillRect(TILE_SIZE / 2 - 4, TILE_SIZE - 13, 8, 8);
-
-        // Pregos prateados nos 4 cantos
-        ctx.fillStyle = '#e2e8f0';
-        ctx.fillRect(8, 8, 2, 2);
-        ctx.fillRect(TILE_SIZE - 10, 8, 2, 2);
-        ctx.fillRect(8, TILE_SIZE - 18, 2, 2);
-        ctx.fillRect(TILE_SIZE - 10, TILE_SIZE - 18, 2, 2);
-
-        return c;
-      }
-    }
-
-    /**
-     * ============================================================================
-     * 3. CLASSE PRINCIPAL DO JOGO (EDIÇÃO 16-BIT DELUXE)
-     * ============================================================================
-     */
-    class GameDeluxe {
-      constructor() {
-        this.canvas = document.getElementById('gameCanvas');
-        this.ctx = this.canvas.getContext('2d');
-        this.audio = new RetroAudioEngine();
-        this.atlas = new SpriteAtlas16Bit();
-
-        // Referências DOM
-        this.overlay = document.getElementById('game-overlay');
-        this.overlayTitle = document.getElementById('overlay-title');
-        this.overlayDesc = document.getElementById('overlay-desc');
-        this.overlayIcon = document.getElementById('overlay-icon');
-        this.btnStart = document.getElementById('btn-start');
-        this.helpModal = document.getElementById('help-modal');
-        this.crtLayer = document.getElementById('crt-layer');
-
-        this.hudLives = document.getElementById('hud-lives');
-        this.hudRange = document.getElementById('hud-range');
-        this.hudBombs = document.getElementById('hud-bombs');
-        this.hudSpeed = document.getElementById('hud-speed');
-        this.hudTime = document.getElementById('hud-time');
-
-        // Estado Geral
-        this.state = 'START';
-        this.globalTimer = 0;
-        this.timeLeft = 180;
-        this.timerInterval = null;
-        this.screenShake = 0;
-
-        // Coleções de Entidades e VFX
-        this.grid = [];
-        this.powerups = [];
-        this.activeBombs = [];
-        this.activeExplosions = [];
-        this.particles = [];
-        this.floatingTexts = [];
-        this.enemies = [];
-
-        // Protagonista: Cachorrinho 16-Bit
-        this.player = {
-          x: 0,
-          y: 0,
-          size: 34,
-          speed: 2.55,
-          speedLevel: 1,
-          lives: 3,
-          maxBombs: 1,
-          bombRange: 1,
-          facing: 'down', // 'up', 'down', 'left', 'right'
-          isMoving: false,
-          walkCycle: 0,
-          dustTimer: 0,
-          invulnerableTimer: 0
-        };
-
-        this.keys = {
-          ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false,
-          KeyW: false, KeyS: false, KeyA: false, KeyD: false
-        };
-
-        this.bindEvents();
-        this.initGrid();
-        this.lastTime = performance.now();
-        requestAnimationFrame((t) => this.loop(t));
-      }
-
-      bindEvents() {
-        window.addEventListener('keydown', (e) => {
-          if (this.keys.hasOwnProperty(e.code)) {
-            this.keys[e.code] = true;
-          }
-          if (e.code === 'Space') {
-            e.preventDefault();
-            if (this.state === 'PLAYING') this.dropBoneBomb();
-          }
-        });
-
-        window.addEventListener('keyup', (e) => {
-          if (this.keys.hasOwnProperty(e.code)) {
-            this.keys[e.code] = false;
-          }
-        });
-
-        // Controles Touch D-Pad
-        const bindDpad = (id, code) => {
-          const btn = document.getElementById(id);
-          const on = (e) => { e.preventDefault(); this.keys[code] = true; };
-          const off = (e) => { e.preventDefault(); this.keys[code] = false; };
-          btn.addEventListener('touchstart', on, { passive: false });
-          btn.addEventListener('touchend', off, { passive: false });
-          btn.addEventListener('mousedown', on);
-          btn.addEventListener('mouseup', off);
-          btn.addEventListener('mouseleave', off);
-        };
-
-        bindDpad('btn-up', 'ArrowUp');
-        bindDpad('btn-down', 'ArrowDown');
-        bindDpad('btn-left', 'ArrowLeft');
-        bindDpad('btn-right', 'ArrowRight');
-
-        const btnBark = document.getElementById('btn-bark');
-        const handleBark = (e) => {
-          e.preventDefault();
-          if (this.state === 'PLAYING') this.dropBoneBomb();
-        };
-        btnBark.addEventListener('touchstart', handleBark, { passive: false });
-        btnBark.addEventListener('mousedown', handleBark);
-
-        // Botões Superiores
-        this.btnStart.addEventListener('click', () => {
-          this.audio.init();
-          this.audio.startBGM();
-          this.startNewGame();
-        });
-
-        document.getElementById('btn-bgm').addEventListener('click', () => {
-          const on = this.audio.toggleBGM();
-          document.getElementById('bgm-icon').textContent = on ? '🎵' : '🔇';
-        });
-
-        document.getElementById('btn-sfx').addEventListener('click', () => {
-          const on = this.audio.toggleSFX();
-          document.getElementById('sfx-icon').textContent = on ? '🔊' : '🔈';
-        });
-
-        document.getElementById('btn-crt').addEventListener('click', () => {
-          this.crtLayer.classList.toggle('hidden');
-        });
-
-        document.getElementById('btn-help').addEventListener('click', () => {
-          this.helpModal.classList.remove('hidden');
-        });
-
-        document.getElementById('btn-close-help').addEventListener('click', () => {
-          this.helpModal.classList.add('hidden');
-        });
-      }
-
-      initGrid() {
-        this.grid = [];
-        for (let r = 0; r < ROWS; r++) {
-          const row = [];
-          for (let c = 0; c < COLS; c++) {
-            if (r === 0 || r === ROWS - 1 || c === 0 || c === COLS - 1) {
-              row.push(TILE.WALL_SOLID);
-            } else if (r % 2 === 0 && c % 2 === 0) {
-              row.push(TILE.WALL_SOLID);
-            } else {
-              row.push(TILE.EMPTY);
-            }
-          }
-          this.grid.push(row);
-        }
-        // Casinha no canto superior direito (13, 1)
-        this.grid[1][COLS - 2] = TILE.GOAL_HOUSE;
-      }
-
-      startNewGame() {
-        this.initGrid();
-        this.state = 'PLAYING';
-        this.overlay.classList.add('hidden');
-        this.helpModal.classList.add('hidden');
-
-        // Posiciona cachorrinho no canto inferior esquerdo (1, 11)
-        this.player.x = 1 * TILE_SIZE + TILE_SIZE / 2;
-        this.player.y = (ROWS - 2) * TILE_SIZE + TILE_SIZE / 2;
-        this.player.speed = 2.55;
-        this.player.speedLevel = 1;
-        this.player.lives = 3;
-        this.player.maxBombs = 1;
-        this.player.bombRange = 1;
-        this.player.facing = 'right';
-        this.player.invulnerableTimer = 0;
-
-        this.activeBombs = [];
-        this.activeExplosions = [];
-        this.particles = [];
-        this.floatingTexts = [];
-        this.powerups = [];
-        this.enemies = [];
-
-        // Zonas livres obrigatórias (Canto inferior esquerdo e Canto superior direito)
-        const safeZones = [
-          { c: 1, r: ROWS - 2 }, { c: 2, r: ROWS - 2 }, { c: 1, r: ROWS - 3 },
-          { c: COLS - 2, r: 1 }, { c: COLS - 3, r: 1 }, { c: COLS - 2, r: 2 }
-        ];
-
-        for (let r = 1; r < ROWS - 1; r++) {
-          for (let c = 1; c < COLS - 1; c++) {
-            if (this.grid[r][c] === TILE.EMPTY) {
-              const isSafe = safeZones.some(z => z.c === c && z.r === r);
-              if (!isSafe && Math.random() < 0.66) {
-                this.grid[r][c] = TILE.BOX_CRATE;
-              }
-            }
-          }
-        }
-
-        this.spawnAlleyCats();
-
-        this.timeLeft = 180;
-        if (this.timerInterval) clearInterval(this.timerInterval);
-        this.timerInterval = setInterval(() => {
-          if (this.state === 'PLAYING') {
-            this.timeLeft--;
-            this.updateHUD();
-            if (this.timeLeft <= 0) {
-              this.triggerGameOver('A noite caiu e o tempo acabou!');
-            }
-          }
-        }, 1000);
-
-        this.updateHUD();
-        this.spawnFloatingText(this.player.x, this.player.y - 20, 'VAMOS PRA CASA!', '#fef08a');
-      }
-
-      spawnAlleyCats() {
-        const candidates = [];
-        for (let r = 1; r < ROWS - 1; r++) {
-          for (let c = 1; c < COLS - 1; c++) {
-            // Longe do canto inferior esquerdo onde o jogador nasce
-            const distFromSpawn = Math.hypot(c - 1, r - (ROWS - 2));
-            if (this.grid[r][c] === TILE.EMPTY && distFromSpawn > 4.5) {
-              candidates.push({ r, c });
-            }
-          }
-        }
-
-        candidates.sort(() => Math.random() - 0.5);
-        const count = Math.min(5, candidates.length);
-
-        for (let i = 0; i < count; i++) {
-          const pt = candidates[i];
-          this.enemies.push({
-            x: pt.c * TILE_SIZE + TILE_SIZE / 2,
-            y: pt.r * TILE_SIZE + TILE_SIZE / 2,
-            size: 30,
-            speed: 1.45 + (i % 2) * 0.25,
-            dir: ['up', 'down', 'left', 'right'][Math.floor(Math.random() * 4)],
-            animTime: Math.random() * 10,
-            alive: true
-          });
-        }
-      }
-
-      updateHUD() {
-        this.hudLives.textContent = '❤️'.repeat(Math.max(0, this.player.lives)) || '💀';
-        this.hudRange.textContent = this.player.bombRange;
-        this.hudBombs.textContent = this.player.maxBombs;
-        this.hudSpeed.textContent = `${this.player.speedLevel}x`;
-        this.hudTime.textContent = `${this.timeLeft}s`;
-      }
-
-      spawnFloatingText(x, y, text, color = '#fbbf24') {
-        this.floatingTexts.push({
-          x, y, text, color,
-          vy: -38,
-          life: 1.15,
-          maxLife: 1.15
-        });
-      }
-
-      // Soltar Osso Apitador
-      dropBoneBomb() {
-        const col = Math.floor(this.player.x / TILE_SIZE);
-        const row = Math.floor(this.player.y / TILE_SIZE);
-
-        if (this.activeBombs.some(b => b.col === col && b.row === row)) return;
-        if (this.activeBombs.length >= this.player.maxBombs) return;
-
-        this.activeBombs.push({
-          col, row,
-          x: col * TILE_SIZE + TILE_SIZE / 2,
-          y: row * TILE_SIZE + TILE_SIZE / 2,
-          timer: 2.3,
-          maxTimer: 2.3,
-          range: this.player.bombRange,
-          noteTimer: 0
-        });
-
-        this.audio.playSqueak();
-      }
-
-      // Detonação Sônica em Cruz
-      detonateBone(bomb) {
-        this.audio.playSonicBark();
-        this.screenShake = 8;
-
-        const cCol = bomb.col;
-        const cRow = bomb.row;
-        const range = bomb.range;
-
-        this.addExplosionCell(cCol, cRow, 'center', 0);
-        this.spawnFloatingText(bomb.x, bomb.y - 10, 'AU! AU!', '#38bdf8');
-
-        // Verifica outros ossos na mesma coordenada ou alcance (reação em cadeia)
-        const dirs = [
-          { dx: 0, dy: -1, dirName: 'up' },
-          { dx: 0, dy: 1,  dirName: 'down' },
-          { dx: -1, dy: 0, dirName: 'left' },
-          { dx: 1, dy: 0,  dirName: 'right' }
-        ];
-
-        dirs.forEach(d => {
-          for (let step = 1; step <= range; step++) {
-            const nc = cCol + d.dx * step;
-            const nr = cRow + d.dy * step;
-
-            if (this.grid[nr][nc] === TILE.WALL_SOLID) break;
-
-            // Reação em cadeia se atingir outro osso
-            const otherBomb = this.activeBombs.find(b => b.col === nc && b.row === nr && b.timer > 0.05);
-            if (otherBomb) {
-              otherBomb.timer = 0.04;
-            }
-
-            if (this.grid[nr][nc] === TILE.GOAL_HOUSE) {
-              this.addExplosionCell(nc, nr, d.dirName, step === range);
-              break;
-            }
-
-            if (this.grid[nr][nc] === TILE.BOX_CRATE) {
-              this.destroyCrate(nc, nr);
-              this.addExplosionCell(nc, nr, d.dirName, true);
-              break;
-            }
-
-            this.addExplosionCell(nc, nr, d.dirName, step === range);
-          }
-        });
-      }
-
-      addExplosionCell(col, row, dirType, isTip) {
-        this.activeExplosions.push({
-          col, row, dirType, isTip,
-          life: 0.45,
-          maxLife: 0.45
-        });
-
-        const cx = col * TILE_SIZE + TILE_SIZE / 2;
-        const cy = row * TILE_SIZE + TILE_SIZE / 2;
-
-        for (let i = 0; i < 6; i++) {
-          const angle = Math.random() * Math.PI * 2;
-          const spd = 40 + Math.random() * 90;
-          this.particles.push({
-            x: cx, y: cy,
-            vx: Math.cos(angle) * spd,
-            vy: Math.sin(angle) * spd - 20,
-            gravity: 120,
-            color: Math.random() > 0.4 ? '#38bdf8' : '#fef08a',
-            size: Math.random() * 4 + 2,
-            life: 0.35 + Math.random() * 0.2,
-            type: 'spark'
-          });
-        }
-      }
-
-      destroyCrate(col, row) {
-        this.grid[row][col] = TILE.EMPTY;
-        const cx = col * TILE_SIZE + TILE_SIZE / 2;
-        const cy = row * TILE_SIZE + TILE_SIZE / 2;
-
-        // Farpas de madeira e pedaços de papelão voando com gravidade
-        for (let i = 0; i < 16; i++) {
-          const angle = Math.random() * Math.PI * 2;
-          const spd = 50 + Math.random() * 110;
-          this.particles.push({
-            x: cx + (Math.random() - 0.5) * 16,
-            y: cy + (Math.random() - 0.5) * 16,
-            vx: Math.cos(angle) * spd,
-            vy: Math.sin(angle) * spd - 70,
-            gravity: 280,
-            color: ['#d97706', '#b45309', '#fef08a', '#78350f'][i % 4],
-            size: 4 + Math.random() * 4,
-            life: 0.5 + Math.random() * 0.25,
-            type: 'splinter'
-          });
-        }
-
-        // Nuvem de poeira
-        for (let i = 0; i < 5; i++) {
-          this.particles.push({
-            x: cx + (Math.random() - 0.5) * 20,
-            y: cy + (Math.random() - 0.5) * 20,
-            vx: (Math.random() - 0.5) * 30,
-            vy: -15 - Math.random() * 20,
-            gravity: -10,
-            color: 'rgba(226, 232, 240, 0.7)',
-            size: 8 + Math.random() * 6,
-            life: 0.4,
-            type: 'dust'
-          });
-        }
-
-        // 44% de chance de surgir um Power-up Deluxe
-        if (Math.random() < 0.44) {
-          const r = Math.random();
-          let type = POWERUP.SPEED;
-          if (r < 0.36) type = POWERUP.RANGE;
-          else if (r < 0.72) type = POWERUP.BOMB_COUNT;
-
-          this.powerups.push({
-            col, row,
-            x: cx, y: cy,
-            type,
-            anim: 0
-          });
-        }
-      }
-
-      /**
-       * ============================================================================
-       * 4. ATUALIZAÇÃO DE FÍSICA, CORNER-SLIDING E IA
-       * ============================================================================
-       */
-      update(dt) {
-        this.globalTimer += dt;
-
-        if (this.screenShake > 0) {
-          this.screenShake = Math.max(0, this.screenShake - dt * 25);
-        }
-
-        if (this.state !== 'PLAYING') return;
-
-        if (this.player.invulnerableTimer > 0) {
-          this.player.invulnerableTimer -= dt;
-        }
-
-        // Leitura de Inputs do Cachorrinho
-        let dx = 0, dy = 0;
-        if (this.keys.ArrowUp || this.keys.KeyW)    { dy -= 1; this.player.facing = 'up'; }
-        if (this.keys.ArrowDown || this.keys.KeyS)  { dy += 1; this.player.facing = 'down'; }
-        if (this.keys.ArrowLeft || this.keys.KeyA)  { dx -= 1; this.player.facing = 'left'; }
-        if (this.keys.ArrowRight || this.keys.KeyD) { dx += 1; this.player.facing = 'right'; }
-
-        if (dx !== 0 && dy !== 0) {
-          dx *= 0.7071;
-          dy *= 0.7071;
-        }
-
-        this.player.isMoving = (dx !== 0 || dy !== 0);
-
-        if (this.player.isMoving) {
-          this.player.walkCycle += dt * (8 + this.player.speedLevel * 1.5);
-          this.player.dustTimer += dt;
-
-          // Poeirinha fofa nas patas ao correr
-          if (this.player.dustTimer > 0.14) {
-            this.player.dustTimer = 0;
-            this.particles.push({
-              x: this.player.x - dx * 10 + (Math.random() - 0.5) * 8,
-              y: this.player.y + 12,
-              vx: -dx * 15,
-              vy: -8,
-              gravity: 0,
-              color: 'rgba(254, 243, 199, 0.65)',
-              size: 5,
-              life: 0.28,
-              type: 'dust'
-            });
-          }
-
-          const stepX = dx * this.player.speed * 60 * dt;
-          const stepY = dy * this.player.speed * 60 * dt;
-          this.movePlayerWithCornerSlide(stepX, stepY);
-        } else {
-          this.player.walkCycle = 0;
-        }
-
-        // Checa chegada na Casinha (13, 1)
-        const pCol = Math.floor(this.player.x / TILE_SIZE);
-        const pRow = Math.floor(this.player.y / TILE_SIZE);
-        if (this.grid[pRow][pCol] === TILE.GOAL_HOUSE) {
-          this.triggerVictory();
-          return;
-        }
-
-        // Atualiza Ossinhos Apitadores
-        for (let i = this.activeBombs.length - 1; i >= 0; i--) {
-          const b = this.activeBombs[i];
-          b.timer -= dt;
-          b.noteTimer += dt;
-
-          // Solta notinha musical flutuante enquanto apita
-          if (b.noteTimer > 0.45) {
-            b.noteTimer = 0;
-            this.particles.push({
-              x: b.x + (Math.random() - 0.5) * 14,
-              y: b.y - 10,
-              vx: (Math.random() - 0.5) * 20,
-              vy: -35,
-              gravity: 0,
-              color: '#fb7185',
-              size: 6,
-              life: 0.55,
-              type: 'note'
-            });
-          }
-
-          if (b.timer <= 0) {
-            this.detonateBone(b);
-            this.activeBombs.splice(i, 1);
-          }
-        }
-
-        // Atualiza Explosões Sônicas
-        for (let i = this.activeExplosions.length - 1; i >= 0; i--) {
-          const exp = this.activeExplosions[i];
-          exp.life -= dt;
-
-          // Verifica colisão com o cachorrinho
-          if (pCol === exp.col && pRow === exp.row && this.player.invulnerableTimer <= 0) {
-            this.damagePlayer();
-          }
-
-          // Verifica colisão com os Gatos de Beco
-          this.enemies.forEach(cat => {
-            if (cat.alive) {
-              const cCol = Math.floor(cat.x / TILE_SIZE);
-              const cRow = Math.floor(cat.y / TILE_SIZE);
-              if (cCol === exp.col && cRow === exp.row) {
-                this.defeatCat(cat);
-              }
-            }
-          });
-
-          if (exp.life <= 0) {
-            this.activeExplosions.splice(i, 1);
-          }
-        }
-
-        // Coleta de Power-ups
-        for (let i = this.powerups.length - 1; i >= 0; i--) {
-          const pw = this.powerups[i];
-          pw.anim += dt * 4;
-          if (Math.hypot(this.player.x - pw.x, this.player.y - pw.y) < TILE_SIZE * 0.58) {
-            this.collectPowerup(pw);
-            this.powerups.splice(i, 1);
-          }
-        }
-
-        // Atualiza Gatos de Beco
-        this.updateCats(dt);
-
-        // Atualiza Partículas Físicas
-        for (let i = this.particles.length - 1; i >= 0; i--) {
-          const p = this.particles[i];
-          p.vy += (p.gravity || 0) * dt;
-          p.x += p.vx * dt;
-          p.y += p.vy * dt;
-          p.life -= dt;
-          if (p.life <= 0) this.particles.splice(i, 1);
-        }
-
-        // Atualiza Textos Flutuantes
-        for (let i = this.floatingTexts.length - 1; i >= 0; i--) {
-          const ft = this.floatingTexts[i];
-          ft.y += ft.vy * dt;
-          ft.life -= dt;
-          if (ft.life <= 0) this.floatingTexts.splice(i, 1);
-        }
-      }
-
-      /**
-       * Movimentação com "Corner Sliding" estilo Super Bomberman
-       * Se o jogador tentar virar num corredor e esbarrar na quina de um pilar,
-       * o motor alinha suavemente o cachorrinho ao centro do corredor.
-       */
-      movePlayerWithCornerSlide(dx, dy) {
-        const radius = 15; // Raio de colisão gentil para corredores de 48px
-        const slideSpeed = 2.6;
-
-        // Tentativa Horizontal
-        if (dx !== 0) {
-          if (!this.checkCollision(this.player.x + dx, this.player.y, radius, this.player)) {
-            this.player.x += dx;
-          } else if (dy === 0) {
-            // Assistência de esquina vertical para entrar no corredor horizontal
-            const currentRow = Math.floor(this.player.y / TILE_SIZE);
-            const targetCenterY = currentRow * TILE_SIZE + TILE_SIZE / 2;
-            const diffY = targetCenterY - this.player.y;
-            if (Math.abs(diffY) > 1 && Math.abs(diffY) < 18) {
-              const stepSlide = Math.sign(diffY) * slideSpeed;
-              if (!this.checkCollision(this.player.x, this.player.y + stepSlide, radius, this.player)) {
-                this.player.y += stepSlide;
-              }
-            }
-          }
-        }
-
-        // Tentativa Vertical
-        if (dy !== 0) {
-          if (!this.checkCollision(this.player.x, this.player.y + dy, radius, this.player)) {
-            this.player.y += dy;
-          } else if (dx === 0) {
-            // Assistência de esquina horizontal para entrar no corredor vertical
-            const currentCol = Math.floor(this.player.x / TILE_SIZE);
-            const targetCenterX = currentCol * TILE_SIZE + TILE_SIZE / 2;
-            const diffX = targetCenterX - this.player.x;
-            if (Math.abs(diffX) > 1 && Math.abs(diffX) < 18) {
-              const stepSlide = Math.sign(diffX) * slideSpeed;
-              if (!this.checkCollision(this.player.x + stepSlide, this.player.y, radius, this.player)) {
-                this.player.x += stepSlide;
-              }
-            }
-          }
-        }
-      }
-
-      checkCollision(wx, wy, radius, entity) {
-        const minC = Math.floor((wx - radius) / TILE_SIZE);
-        const maxC = Math.floor((wx + radius) / TILE_SIZE);
-        const minR = Math.floor((wy - radius) / TILE_SIZE);
-        const maxR = Math.floor((wy + radius) / TILE_SIZE);
-
-        for (let r = minR; r <= maxR; r++) {
-          for (let c = minC; c <= maxC; c++) {
-            if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return true;
-            const t = this.grid[r][c];
-            if (t === TILE.GOAL_HOUSE && entity !== this.player) return true;
-            if (t === TILE.WALL_SOLID || t === TILE.BOX_CRATE) return true;
-
-            const bomb = this.activeBombs.find(b => b.col === c && b.row === r);
-            if (bomb) {
-              const d = Math.hypot(entity.x - bomb.x, entity.y - bomb.y);
-              if (d > TILE_SIZE * 0.72) return true;
-            }
-          }
-        }
-        return false;
-      }
-
-      collectPowerup(pw) {
-        this.audio.playPowerup();
-        let label = '';
-        let color = '#fef08a';
-
-        if (pw.type === POWERUP.SPEED) {
-          if (this.player.speedLevel < 4) {
-            this.player.speedLevel++;
-            this.player.speed += 0.45;
-          }
-          label = '+1 VELOCIDADE!';
-          color = '#38bdf8';
-        } else if (pw.type === POWERUP.RANGE) {
-          if (this.player.bombRange < 6) {
-            this.player.bombRange++;
-          }
-          label = '+1 ALCANCE!';
-          color = '#fbbf24';
-        } else if (pw.type === POWERUP.BOMB_COUNT) {
-          if (this.player.maxBombs < 5) {
-            this.player.maxBombs++;
-          }
-          label = '+1 OSSO!';
-          color = '#4ade80';
-        }
-
-        this.updateHUD();
-        this.spawnFloatingText(pw.x, pw.y - 12, label, color);
-
-        for (let i = 0; i < 12; i++) {
-          const a = (Math.PI * 2 * i) / 12;
-          this.particles.push({
-            x: pw.x, y: pw.y,
-            vx: Math.cos(a) * 65,
-            vy: Math.sin(a) * 65 - 20,
-            gravity: 60,
-            color,
-            size: 4,
-            life: 0.45,
-            type: 'spark'
-          });
-        }
-      }
-
-      updateCats(dt) {
-        this.enemies.forEach(cat => {
-          if (!cat.alive) return;
-          cat.animTime += dt * 7;
-
-          let dx = 0, dy = 0;
-          if (cat.dir === 'up') dy = -1;
-          if (cat.dir === 'down') dy = 1;
-          if (cat.dir === 'left') dx = -1;
-          if (cat.dir === 'right') dx = 1;
-
-          const nextX = cat.x + dx * cat.speed * 60 * dt;
-          const nextY = cat.y + dy * cat.speed * 60 * dt;
-
-          if (!this.checkCollision(nextX, nextY, 13, cat)) {
-            cat.x = nextX;
-            cat.y = nextY;
-            // Chance de mudar direção quando alinhado num cruzamento
-            const centerX = Math.floor(cat.x / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
-            const centerY = Math.floor(cat.y / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
-            if (Math.hypot(cat.x - centerX, cat.y - centerY) < 2.2 && Math.random() < 0.12) {
-              this.pickNewCatDirection(cat);
-            }
-          } else {
-            this.pickNewCatDirection(cat);
-          }
-
-          // Contato com o cachorrinho
-          if (Math.hypot(cat.x - this.player.x, cat.y - this.player.y) < 25 && this.player.invulnerableTimer <= 0) {
-            this.damagePlayer();
-          }
-        });
-      }
-
-      pickNewCatDirection(cat) {
-        const dirs = [
-          { name: 'up', dx: 0, dy: -1 },
-          { name: 'down', dx: 0, dy: 1 },
-          { name: 'left', dx: -1, dy: 0 },
-          { name: 'right', dx: 1, dy: 0 }
-        ];
-        const openDirs = dirs.filter(d => !this.checkCollision(cat.x + d.dx * 16, cat.y + d.dy * 16, 12, cat));
-        if (openDirs.length > 0) {
-          cat.dir = openDirs[Math.floor(Math.random() * openDirs.length)].name;
-        } else {
-          cat.dir = dirs[Math.floor(Math.random() * 4)].name;
-        }
-      }
-
-      defeatCat(cat) {
-        cat.alive = false;
-        this.audio.playCatMeow();
-        this.spawnFloatingText(cat.x, cat.y - 14, 'MIAU!!', '#f472b6');
-
-        for (let i = 0; i < 14; i++) {
-          const a = Math.random() * Math.PI * 2;
-          const spd = 40 + Math.random() * 90;
-          this.particles.push({
-            x: cat.x, y: cat.y,
-            vx: Math.cos(a) * spd,
-            vy: Math.sin(a) * spd - 40,
-            gravity: 150,
-            color: i % 2 === 0 ? '#fde047' : '#f8fafc',
-            size: 5,
-            life: 0.55,
-            type: 'star'
-          });
-        }
-      }
-
-      damagePlayer() {
-        this.player.lives--;
-        this.player.invulnerableTimer = 2.0;
-        this.screenShake = 10;
-        this.audio.playHurt();
-        this.updateHUD();
-        this.spawnFloatingText(this.player.x, this.player.y - 15, 'AI! CUIDADO!', '#fb7185');
-
-        if (this.player.lives <= 0) {
-          this.triggerGameOver('Os gatos de beco assustaram o cãozinho!');
-        }
-      }
-
-      triggerVictory() {
-        this.state = 'VICTORY';
-        this.audio.playVictory();
-        this.overlayIcon.textContent = '🐶🏡';
-        this.overlayTitle.textContent = 'DOCE LAR ALCANÇADO!';
-        this.overlayTitle.className = 'text-lg sm:text-2xl font-retro text-emerald-400 mb-3 drop-shadow-[0_3px_0_rgba(0,0,0,1)]';
-        this.overlayDesc.innerHTML = `Incrível! O cãozinho atravessou todo o labirinto e chegou quentinho na sua casinha!<br><span class="text-amber-300 font-bold mt-2 block">Tempo Restante: ${this.timeLeft} segundos</span>`;
-        this.btnStart.textContent = 'JOGAR NOVAMENTE';
-        this.overlay.classList.remove('hidden');
-      }
-
-      triggerGameOver(reason) {
-        this.state = 'GAMEOVER';
-        this.overlayIcon.textContent = '🌧️🐾';
-        this.overlayTitle.textContent = 'AINDA PERDIDO...';
-        this.overlayTitle.className = 'text-lg sm:text-2xl font-retro text-rose-500 mb-3 drop-shadow-[0_3px_0_rgba(0,0,0,1)]';
-        this.overlayDesc.textContent = `${reason} Não desista! Sua casinha continua esperando no canto superior direito.`;
-        this.btnStart.textContent = 'TENTAR NOVAMENTE';
-        this.overlay.classList.remove('hidden');
-      }
-
-      /**
-       * ============================================================================
-       * 5. PIPELINE DE RENDERIZAÇÃO 16-BIT DELUXE
-       * ============================================================================
-       */
-      draw() {
-        this.ctx.save();
-
-        // Aplica Screen Shake se ativo
-        if (this.screenShake > 0) {
-          const sx = (Math.random() - 0.5) * this.screenShake;
-          const sy = (Math.random() - 0.5) * this.screenShake;
-          this.ctx.translate(sx, sy);
-        }
-
-        // 1. Gramado 16-Bit e Sombras Projetadas no Chão
-        this.drawGrassAndShadows();
-
-        // 2. Power-ups Brilhantes
-        this.drawPowerups();
-
-        // 3. Ossinhos Apitadores (Com Squash & Stretch)
-        this.drawBombs();
-
-        // 4. Pilares, Caixas e Casinha Deluxe (Com ordenação visual Y)
-        this.drawGridObjects();
-
-        // 5. Ondas de Choque Sônicas ("AU! AU!")
-        this.drawSonicExplosions();
-
-        // 6. Gatos de Beco Animados
-        this.drawAlleyCats();
-
-        // 7. Cachorrinho Protagonista Multi-Direcional
-        this.drawPuppyPlayer();
-
-        // 8. Partículas com Física e Textos Flutuantes
-        this.drawParticles();
-        this.drawFloatingTexts();
-
-        this.ctx.restore();
-      }
-
-      drawGrassAndShadows() {
-        for (let r = 0; r < ROWS; r++) {
-          for (let c = 0; c < COLS; c++) {
-            const x = c * TILE_SIZE;
-            const y = r * TILE_SIZE;
-            const isLight = (r + c) % 2 === 0;
-            this.ctx.drawImage(isLight ? this.atlas.tiles.grassLight : this.atlas.tiles.grassDark, x, y);
-
-            // Se o tile de cima (r - 1) for parede sólida ou caixa, projeta sombra suave no gramado
-            if (r > 0 && (this.grid[r - 1][c] === TILE.WALL_SOLID || this.grid[r - 1][c] === TILE.BOX_CRATE)) {
-              if (this.grid[r][c] === TILE.EMPTY || this.grid[r][c] === TILE.GOAL_HOUSE) {
-                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.28)';
-                this.ctx.fillRect(x, y, TILE_SIZE, 9);
-              }
-            }
-          }
-        }
-      }
-
-      drawGridObjects() {
-        for (let r = 0; r < ROWS; r++) {
-          for (let c = 0; c < COLS; c++) {
-            const tile = this.grid[r][c];
-            const px = c * TILE_SIZE;
-            const py = r * TILE_SIZE;
-
-            if (tile === TILE.WALL_SOLID) {
-              this.ctx.drawImage(this.atlas.tiles.pillarWall, px, py);
-            } else if (tile === TILE.BOX_CRATE) {
-              this.ctx.drawImage(this.atlas.tiles.crateBox, px, py);
-            } else if (tile === TILE.GOAL_HOUSE) {
-              this.drawCozyDoghouseDeluxe(px, py);
-            }
-          }
-        }
-      }
-
-      drawCozyDoghouseDeluxe(x, y) {
-        const pulse = 0.65 + Math.sin(this.globalTimer * 4) * 0.25;
-
-        // Aura acolhedora dourada pulsante ao redor da casinha
-        const grad = this.ctx.createRadialGradient(
-          x + TILE_SIZE / 2, y + TILE_SIZE / 2, 4,
-          x + TILE_SIZE / 2, y + TILE_SIZE / 2, TILE_SIZE * 0.85
-        );
-        grad.addColorStop(0, `rgba(253, 224, 71, ${pulse})`);
-        grad.addColorStop(1, 'rgba(253, 224, 71, 0)');
-        this.ctx.fillStyle = grad;
-        this.ctx.fillRect(x - 12, y - 12, TILE_SIZE + 24, TILE_SIZE + 24);
-
-        // Tapete de boas-vindas na entrada
-        this.ctx.fillStyle = '#d97706';
-        this.ctx.fillRect(x + 14, y + TILE_SIZE - 8, 20, 6);
-        this.ctx.fillStyle = '#fef3c7';
-        this.ctx.fillRect(x + 16, y + TILE_SIZE - 6, 16, 2);
-
-        // Paredes de madeira da casinha
-        this.ctx.fillStyle = '#fef3c7';
-        this.ctx.fillRect(x + 8, y + 18, TILE_SIZE - 16, TILE_SIZE - 24);
-        this.ctx.fillStyle = '#fde68a';
-        this.ctx.fillRect(x + 8, y + 26, TILE_SIZE - 16, 2);
-
-        // Porta em arco quentinha (com brilho interno âmbar)
-        this.ctx.fillStyle = '#451a03';
-        this.ctx.beginPath();
-        this.ctx.arc(x + TILE_SIZE / 2, y + 32, 8, Math.PI, 0, false);
-        this.ctx.lineTo(x + TILE_SIZE / 2 + 8, y + TILE_SIZE - 6);
-        this.ctx.lineTo(x + TILE_SIZE / 2 - 8, y + TILE_SIZE - 6);
-        this.ctx.closePath();
-        this.ctx.fill();
-
-        // Telhado vermelho 16-bit com telhas
-        this.ctx.fillStyle = '#dc2626';
-        this.ctx.beginPath();
-        this.ctx.moveTo(x + TILE_SIZE / 2, y + 3);
-        this.ctx.lineTo(x + 3, y + 20);
-        this.ctx.lineTo(x + TILE_SIZE - 3, y + 20);
-        this.ctx.closePath();
-        this.ctx.fill();
-
-        this.ctx.strokeStyle = '#991b1b';
-        this.ctx.lineWidth = 2;
-        this.ctx.stroke();
-
-        // Plaquinha de Osso Dourado acima da porta
-        this.ctx.fillStyle = '#fbbf24';
-        this.ctx.fillRect(x + TILE_SIZE / 2 - 6, y + 17, 12, 4);
-      }
-
-      drawPowerups() {
-        this.powerups.forEach(pw => {
-          const bob = Math.sin(pw.anim) * 3.5;
-          const x = pw.x;
-          const y = pw.y + bob;
-
-          // Sombra no chão
-          this.ctx.fillStyle = 'rgba(0,0,0,0.35)';
-          this.ctx.beginPath();
-          this.ctx.ellipse(pw.x, pw.y + 14, 11, 5, 0, 0, Math.PI * 2);
-          this.ctx.fill();
-
-          // Aura brilhante
-          const grad = this.ctx.createRadialGradient(x, y, 2, x, y, 18);
-          if (pw.type === POWERUP.RANGE) {
-            grad.addColorStop(0, 'rgba(251, 191, 36, 0.85)');
-            grad.addColorStop(1, 'rgba(251, 191, 36, 0)');
-          } else if (pw.type === POWERUP.SPEED) {
-            grad.addColorStop(0, 'rgba(56, 189, 248, 0.85)');
-            grad.addColorStop(1, 'rgba(56, 189, 248, 0)');
-          } else {
-            grad.addColorStop(0, 'rgba(74, 222, 128, 0.85)');
-            grad.addColorStop(1, 'rgba(74, 222, 128, 0)');
-          }
-          this.ctx.fillStyle = grad;
-          this.ctx.beginPath();
-          this.ctx.arc(x, y, 18, 0, Math.PI * 2);
-          this.ctx.fill();
-
-          // Medalhão 16-bit de fundo
-          this.ctx.fillStyle = '#1e293b';
-          this.ctx.beginPath();
-          this.ctx.arc(x, y, 13, 0, Math.PI * 2);
-          this.ctx.fill();
-          this.ctx.lineWidth = 2;
-          this.ctx.strokeStyle = '#f8fafc';
-          this.ctx.stroke();
-
-          this.ctx.font = '16px sans-serif';
-          this.ctx.textAlign = 'center';
-          this.ctx.textBaseline = 'middle';
-          const icon = pw.type === POWERUP.SPEED ? '👟' : (pw.type === POWERUP.RANGE ? '🦴' : '🍗');
-          this.ctx.fillText(icon, x, y + 1);
-        });
-      }
-
-      drawBombs() {
-        this.activeBombs.forEach(b => {
-          const urgency = 1 + (1 - b.timer / b.maxTimer) * 2.5;
-          const squashX = 1 + Math.sin(this.globalTimer * 8 * urgency) * 0.16;
-          const squashY = 1 - Math.sin(this.globalTimer * 8 * urgency) * 0.16;
-          const isFlashing = b.timer < 0.75 && Math.floor(b.timer * 14) % 2 === 0;
-
-          this.ctx.save();
-          this.ctx.translate(b.x, b.y);
-
-          // Sombra
-          this.ctx.fillStyle = 'rgba(0,0,0,0.35)';
-          this.ctx.beginPath();
-          this.ctx.ellipse(0, 11, 14 * squashX, 6, 0, 0, Math.PI * 2);
-          this.ctx.fill();
-
-          this.ctx.scale(squashX, squashY);
-
-          // Corpo do Osso Apitador
-          this.ctx.fillStyle = isFlashing ? '#fca5a5' : '#f8fafc';
-          this.ctx.strokeStyle = '#475569';
-          this.ctx.lineWidth = 2;
-
-          // Haste central
-          this.ctx.fillRect(-11, -5, 22, 10);
-          // 4 extremidades arredondadas
-          const knobs = [[-11, -5], [-11, 5], [11, -5], [11, 5]];
-          knobs.forEach(([kx, ky]) => {
-            this.ctx.beginPath();
-            this.ctx.arc(kx, ky, 5.5, 0, Math.PI * 2);
-            this.ctx.fill();
-          });
-
-          // Apito sonoro vermelho central
-          this.ctx.fillStyle = isFlashing ? '#fef08a' : '#ef4444';
-          this.ctx.beginPath();
-          this.ctx.arc(0, 0, 5, 0, Math.PI * 2);
-          this.ctx.fill();
-
-          // Brilho especular
-          this.ctx.fillStyle = '#ffffff';
-          this.ctx.fillRect(-2, -2, 2, 2);
-
-          this.ctx.restore();
-        });
-      }
-
-      drawSonicExplosions() {
-        this.activeExplosions.forEach(exp => {
-          const cx = exp.col * TILE_SIZE + TILE_SIZE / 2;
-          const cy = exp.row * TILE_SIZE + TILE_SIZE / 2;
-          const ratio = exp.life / exp.maxLife;
-
-          this.ctx.save();
-          this.ctx.globalAlpha = Math.min(1, ratio * 1.4);
-
-          // Feixe de Energia Sônica
-          const radius = (TILE_SIZE * 0.48) * Math.sin(ratio * Math.PI * 0.8 + 0.2);
-          const grad = this.ctx.createRadialGradient(cx, cy, 2, cx, cy, TILE_SIZE * 0.55);
-          grad.addColorStop(0, '#ffffff');
-          grad.addColorStop(0.45, '#fef08a');
-          grad.addColorStop(0.75, '#38bdf8');
-          grad.addColorStop(1, 'rgba(56, 189, 248, 0)');
-
-          this.ctx.fillStyle = grad;
-          this.ctx.beginPath();
-          this.ctx.arc(cx, cy, TILE_SIZE * 0.55, 0, Math.PI * 2);
-          this.ctx.fill();
-
-          // Anéis concêntricos de onda de choque
-          this.ctx.strokeStyle = '#fef08a';
-          this.ctx.lineWidth = 2.5;
-          this.ctx.beginPath();
-          this.ctx.arc(cx, cy, Math.max(2, (1 - ratio) * (TILE_SIZE * 0.48)), 0, Math.PI * 2);
-          this.ctx.stroke();
-
-          this.ctx.restore();
-        });
-      }
-
-      /**
-       * Gatos de Beco 16-Bit com cauda sinuosa, listras tabby e orelhas pontudas
-       */
-      drawAlleyCats() {
-        this.enemies.forEach(cat => {
-          if (!cat.alive) return;
-
-          const x = cat.x;
-          const y = cat.y;
-          const stepBob = Math.abs(Math.sin(cat.animTime)) * 3;
-          const tailWag = Math.sin(cat.animTime * 1.2) * 7;
-
-          this.ctx.save();
-          this.ctx.translate(x, y);
-
-          // Sombra no chão
-          this.ctx.fillStyle = 'rgba(0,0,0,0.35)';
-          this.ctx.beginPath();
-          this.ctx.ellipse(0, 14, 12, 5, 0, 0, Math.PI * 2);
-          this.ctx.fill();
-
-          this.ctx.translate(0, -stepBob);
-
-          // Cauda sinuosa listrada
-          this.ctx.strokeStyle = '#475569';
-          this.ctx.lineWidth = 4;
-          this.ctx.lineCap = 'round';
-          this.ctx.beginPath();
-          this.ctx.moveTo(0, 6);
-          this.ctx.quadraticCurveTo(tailWag, 14, tailWag * 1.2, 2);
-          this.ctx.stroke();
-
-          // Corpo do gato (roxo/cinza escuro de beco)
-          this.ctx.fillStyle = '#475569';
-          this.ctx.beginPath();
-          this.ctx.ellipse(0, 3, 11, 10, 0, 0, Math.PI * 2);
-          this.ctx.fill();
-
-          // Listras nas costas
-          this.ctx.fillStyle = '#1e293b';
-          this.ctx.fillRect(-6, 0, 12, 2);
-          this.ctx.fillRect(-5, 4, 10, 2);
-
-          // Cabeça
-          this.ctx.fillStyle = '#64748b';
-          this.ctx.beginPath();
-          this.ctx.arc(0, -5, 10, 0, Math.PI * 2);
-          this.ctx.fill();
-
-          // Orelhas pontudas com interior rosado
-          this.ctx.fillStyle = '#475569';
-          this.ctx.beginPath();
-          this.ctx.moveTo(-9, -9); this.ctx.lineTo(-6, -19); this.ctx.lineTo(-1, -12);
-          this.ctx.moveTo(9, -9);  this.ctx.lineTo(6, -19);  this.ctx.lineTo(1, -12);
-          this.ctx.fill();
-
-          this.ctx.fillStyle = '#f472b6';
-          this.ctx.beginPath();
-          this.ctx.moveTo(-7, -10); this.ctx.lineTo(-5.5, -16); this.ctx.lineTo(-2.5, -12);
-          this.ctx.moveTo(7, -10);  this.ctx.lineTo(5.5, -16);  this.ctx.lineTo(2.5, -12);
-          this.ctx.fill();
-
-          // Rosto conforme direção
-          if (cat.dir !== 'up') {
-            const lookOffset = cat.dir === 'left' ? -2.5 : (cat.dir === 'right' ? 2.5 : 0);
-
-            // Olhos amarelos brilhantes de gato
-            this.ctx.fillStyle = '#fde047';
-            this.ctx.beginPath();
-            this.ctx.ellipse(-4 + lookOffset, -6, 2.8, 3.2, 0, 0, Math.PI * 2);
-            this.ctx.ellipse(4 + lookOffset, -6, 2.8, 3.2, 0, 0, Math.PI * 2);
-            this.ctx.fill();
-
-            // Pupilas em fenda vertical
-            this.ctx.fillStyle = '#020617';
-            this.ctx.fillRect(-4.5 + lookOffset, -8, 1.2, 4.5);
-            this.ctx.fillRect(3.5 + lookOffset, -8, 1.2, 4.5);
-
-            // Bigodes brancos
-            this.ctx.strokeStyle = '#e2e8f0';
-            this.ctx.lineWidth = 1;
-            this.ctx.beginPath();
-            this.ctx.moveTo(-6 + lookOffset, -2); this.ctx.lineTo(-14 + lookOffset, -3);
-            this.ctx.moveTo(6 + lookOffset, -2);  this.ctx.lineTo(14 + lookOffset, -3);
-            this.ctx.stroke();
-          }
-
-          this.ctx.restore();
-        });
-      }
-
-      /**
-       * Cachorrinho Protagonista Multi-Direcional (UP, DOWN, LEFT, RIGHT)
-       * Com orelhas balançando, coleira com medalha de ouro, patinhas animadas e rabinho
-       */
-      drawPuppyPlayer() {
-        if (this.player.invulnerableTimer > 0 && Math.floor(this.player.invulnerableTimer * 14) % 2 === 0) {
-          return;
-        }
-
-        const x = this.player.x;
-        const y = this.player.y;
-        const facing = this.player.facing;
-        const walkSin = Math.sin(this.player.walkCycle);
-        const walkCos = Math.cos(this.player.walkCycle);
-        const bounce = this.player.isMoving ? Math.abs(walkSin) * 3.5 : Math.sin(this.globalTimer * 3) * 1;
-        const earFlop = this.player.isMoving ? Math.abs(walkCos) * 3 : 0;
-
-        this.ctx.save();
-        this.ctx.translate(x, y);
-
-        // Sombra elíptica no chão
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.38)';
-        this.ctx.beginPath();
-        this.ctx.ellipse(0, 15, 13 - bounce * 0.4, 5.5, 0, 0, Math.PI * 2);
-        this.ctx.fill();
-
-        this.ctx.translate(0, -bounce);
-
-        // 1. Rabinho abanando (atrás do corpo quando olha para baixo ou lados, na frente quando olha para cima)
-        const tailAngle = Math.sin(this.globalTimer * 14) * 6;
-        if (facing !== 'down') {
-          this.ctx.fillStyle = '#d97706';
-          this.ctx.beginPath();
-          const tx = facing === 'left' ? 10 : (facing === 'right' ? -10 : tailAngle);
-          this.ctx.arc(tx, 5, 4.5, 0, Math.PI * 2);
-          this.ctx.fill();
-        }
-
-        // 2. Patinhas animadas (4-frame walk cycle)
-        const footL = this.player.isMoving ? walkSin * 4 : 0;
-        const footR = this.player.isMoving ? -walkSin * 4 : 0;
-        this.ctx.fillStyle = '#fef3c7';
-        this.ctx.beginPath();
-        this.ctx.arc(-6, 12 + footL, 4, 0, Math.PI * 2);
-        this.ctx.arc(6, 12 + footR, 4, 0, Math.PI * 2);
-        this.ctx.fill();
-
-        // 3. Corpo Caramelo Dourado
-        this.ctx.fillStyle = '#d97706';
-        this.ctx.beginPath();
-        this.ctx.ellipse(0, 4, 11.5, 9.5, 0, 0, Math.PI * 2);
-        this.ctx.fill();
-
-        // Barriguinha creme
-        if (facing !== 'up') {
-          this.ctx.fillStyle = '#fde68a';
-          this.ctx.beginPath();
-          this.ctx.ellipse(0, 5, 6.5, 6, 0, 0, Math.PI * 2);
-          this.ctx.fill();
-        }
-
-        // 4. Coleira Vermelha + Medalha Dourada
-        this.ctx.fillStyle = '#dc2626';
-        this.ctx.fillRect(-8, -2, 16, 3.5);
-        if (facing !== 'up') {
-          this.ctx.fillStyle = '#facc15';
-          this.ctx.beginPath();
-          this.ctx.arc(0, 2.5, 3, 0, Math.PI * 2);
-          this.ctx.fill();
-        }
-
-        // 5. Cabeça do Cachorrinho
-        this.ctx.fillStyle = '#f59e0b';
-        this.ctx.beginPath();
-        this.ctx.arc(0, -7, 11.5, 0, Math.PI * 2);
-        this.ctx.fill();
-
-        // 6. Orelhas Caídas Carismáticas (reagem ao movimento)
-        this.ctx.fillStyle = '#92400e';
-        if (facing === 'left') {
-          this.ctx.beginPath();
-          this.ctx.ellipse(4, -6 - earFlop, 5.5, 9.5, -0.2, 0, Math.PI * 2);
-          this.ctx.fill();
-        } else if (facing === 'right') {
-          this.ctx.beginPath();
-          this.ctx.ellipse(-4, -6 - earFlop, 5.5, 9.5, 0.2, 0, Math.PI * 2);
-          this.ctx.fill();
-        } else {
-          this.ctx.beginPath();
-          this.ctx.ellipse(-11, -6 - earFlop, 4.5, 9, 0.35, 0, Math.PI * 2);
-          this.ctx.ellipse(11, -6 - earFlop, 4.5, 9, -0.35, 0, Math.PI * 2);
-          this.ctx.fill();
-        }
-
-        // 7. Focinho, Olhos e Narizinho conforme a direção
-        if (facing !== 'up') {
-          const dirX = facing === 'left' ? -4 : (facing === 'right' ? 4 : 0);
-
-          // Mancha creme do focinho
-          this.ctx.fillStyle = '#fef3c7';
-          this.ctx.beginPath();
-          this.ctx.ellipse(dirX, -4, 6.5, 5, 0, 0, Math.PI * 2);
-          this.ctx.fill();
-
-          // Olhos expressivos 16-bit com brilho
-          this.ctx.fillStyle = '#1c1917';
-          if (facing === 'down') {
-            this.ctx.beginPath();
-            this.ctx.arc(-4.5, -9, 2.3, 0, Math.PI * 2);
-            this.ctx.arc(4.5, -9, 2.3, 0, Math.PI * 2);
-            this.ctx.fill();
-            this.ctx.fillStyle = '#ffffff';
-            this.ctx.fillRect(-5.2, -10.2, 1.4, 1.4);
-            this.ctx.fillRect(3.8, -10.2, 1.4, 1.4);
-          } else {
-            // Vista de perfil (esquerda ou direita)
-            this.ctx.beginPath();
-            this.ctx.arc(dirX * 0.85, -9, 2.4, 0, Math.PI * 2);
-            this.ctx.fill();
-            this.ctx.fillStyle = '#ffffff';
-            this.ctx.fillRect(dirX * 0.85 - 0.8, -10.2, 1.4, 1.4);
-          }
-
-          // Narizinho de botão preto
-          this.ctx.fillStyle = '#1c1917';
-          this.ctx.beginPath();
-          this.ctx.ellipse(dirX * 1.15, -5.5, 2.8, 2, 0, 0, Math.PI * 2);
-          this.ctx.fill();
-
-          // Linguinha rosada feliz
-          this.ctx.fillStyle = '#fb7185';
-          this.ctx.beginPath();
-          this.ctx.arc(dirX, -1.5, 2, 0, Math.PI);
-          this.ctx.fill();
-        } else {
-          // Vista de costas (UP): mostra o rabinho abanando em primeiro plano!
-          this.ctx.fillStyle = '#b45309';
-          this.ctx.beginPath();
-          this.ctx.arc(tailAngle, 6, 5, 0, Math.PI * 2);
-          this.ctx.fill();
-        }
-
-        this.ctx.restore();
-      }
-
-      drawParticles() {
-        this.particles.forEach(p => {
-          this.ctx.save();
-          if (p.type === 'note') {
-            this.ctx.fillStyle = p.color;
-            this.ctx.font = 'bold 12px monospace';
-            this.ctx.fillText('♪', p.x, p.y);
-          } else if (p.type === 'dust') {
-            this.ctx.fillStyle = p.color;
-            this.ctx.beginPath();
-            this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-            this.ctx.fill();
-          } else {
-            this.ctx.fillStyle = p.color;
-            this.ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
-          }
-          this.ctx.restore();
-        });
-      }
-
-      drawFloatingTexts() {
-        this.floatingTexts.forEach(ft => {
-          const alpha = Math.min(1, ft.life / ft.maxLife * 1.5);
-          this.ctx.save();
-          this.ctx.globalAlpha = alpha;
-          this.ctx.font = 'bold 10px "Press Start 2P", monospace';
-          this.ctx.textAlign = 'center';
-
-          // Contorno preto estilo arcade 16-bit
-          this.ctx.fillStyle = '#000000';
-          this.ctx.fillText(ft.text, ft.x + 1.5, ft.y + 1.5);
-
-          this.ctx.fillStyle = ft.color;
-          this.ctx.fillText(ft.text, ft.x, ft.y);
-          this.ctx.restore();
-        });
-      }
-
-      loop(timestamp) {
-        const dt = Math.min((timestamp - this.lastTime) / 1000, 0.1);
-        this.lastTime = timestamp;
-
-        this.update(dt);
-        this.draw();
-
-        requestAnimationFrame((t) => this.loop(t));
-      }
-    }
-
-    window.onload = () => {
-      new GameDeluxe();
-    };
-  </script>
-</body>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
 </html>

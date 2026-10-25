@@ -5,3 +5,22 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+#game {
+  width: 100%;
+  aspect-ratio: 15 / 13;
+}
+
+#game canvas {
+  display: block;
+  image-rendering: pixelated;
+}
+
+footer button {
+  touch-action: none;
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}

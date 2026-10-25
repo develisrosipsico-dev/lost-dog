@@ -1,12 +1,14 @@
 # 🐶 Caminho de Volta — AU-BERMAN 16-BIT
 
-Um jogo 2D de labirinto inspirado nos jogos de 16 bits. Ajude o cãozinho a sair do canto inferior esquerdo e chegar à casinha no canto superior direito, usando ossos apitadores para quebrar caixas e espantar os gatos.
+Jogo 2D de labirinto em **Phaser 3 + TypeScript**, inspirado em Bomberman. O cão começa no canto inferior esquerdo e precisa chegar à casinha no canto superior direito.
 
-Esta é a versão inicial enviada em HTML, preparada para desenvolvimento local com Vite. Os desenhos são feitos em Canvas e a música e os efeitos são gerados com Web Audio. Os estilos e as fontes são servidos pelo próprio projeto, sem CDN. Não exige servidor de aplicação, banco de dados ou credenciais.
+A migração preserva a matriz **15×13**, tiles de **48 px**, resolução lógica **720×624**, corner-sliding, ossos com explosão em cruz e reação em cadeia, caixas, gatos, powerups, três vidas e 180 segundos. As partículas mantêm velocidade, gravidade e duração da versão original; agora são sprites do Phaser. A música e os efeitos continuam usando Web Audio.
+
+O antigo gerador de texturas foi substituído por **PNG + JSON de spritesheet Aseprite**, com animações direcionais e arte inicial editável em `art/world.aseprite`. As fontes e imagens são locais; o jogo não usa CDN, backend, banco de dados ou credenciais.
 
 ## Rodar no computador
 
-Instale o **Node.js 24 LTS**, que inclui o npm. Depois, no terminal:
+Instale **Node.js 24 LTS** e execute:
 
 ```sh
 git clone https://github.com/develisrosipsico-dev/lost-dog.git
@@ -15,37 +17,59 @@ npm ci
 npm run dev
 ```
 
-Abra no navegador o endereço exibido pelo Vite no terminal. Deixe o terminal aberto enquanto joga; para parar, pressione `Ctrl+C`. Se já tiver clonado o projeto, entre na pasta e execute os dois últimos comandos.
+Se já tiver o repositório, atualize sua cópia, entre na pasta e execute `npm ci` e `npm run dev`. Abra no navegador o endereço mostrado pelo Vite. Deixe o terminal aberto; `Ctrl+C` encerra o servidor. `npm start` também inicia o desenvolvimento.
 
-`npm start` também inicia o servidor de desenvolvimento. Com nvm instalado, `nvm install` e `nvm use` selecionam a versão indicada em `.nvmrc`.
+Com nvm instalado, `nvm install` e `nvm use` selecionam a versão de `.nvmrc`.
 
 ## Controles
 
 | Ação | Controle |
 | --- | --- |
-| Mover o cão | Setas, WASD ou direcional na tela |
-| Soltar osso apitador | Espaço ou botão LATIR! |
-| Música e efeitos | Botões BGM e SFX no topo |
-| Filtro de TV de tubo | Botão CRT |
-| Abrir o manual | Botão ? |
+| Mover | Setas, WASD ou direcional na tela |
+| Soltar osso | Espaço ou botão LATIR! |
+| Música e efeitos | BGM e SFX no topo |
+| Filtro de TV de tubo | CRT |
+| Manual / pausa | ? e CONTINUAR |
 
-Clique em **INICIAR AVENTURA** para começar e ativar o áudio. Você tem três vidas e 180 segundos. Afaste-se dos ossos antes de eles estourarem: o latido também pode atingir o cãozinho. Colete os itens para aumentar alcance, velocidade e quantidade de ossos simultâneos.
+Clique em **INICIAR AVENTURA** para ativar o áudio e começar. Afaste-se do osso antes da explosão, que também pode atingir o cão. O cão consegue sair do próprio osso, mas não atravessá-lo novamente. As melhorias aumentam alcance, velocidade e quantidade de ossos simultâneos.
 
-## Gerar a versão para hospedagem
+O manual e a perda de foco pausam a simulação. Ao voltar, as teclas são liberadas para evitar movimento preso. A cena usa passos fixos de 1/60 s para manter as colisões e a assistência nas quinas estáveis em diferentes taxas de renderização.
+
+## Validar e gerar para hospedagem
 
 ```sh
+npm test
+npm run typecheck
 npm run build
 npm run preview
 ```
 
-Abra o endereço mostrado pelo comando de prévia. A pasta `dist/` contém a página pronta para qualquer hospedagem estática, inclusive GitHub Pages. Os caminhos são relativos para permitir publicação em um subdiretório. O servidor de prévia serve apenas para conferir a versão gerada; a publicação não é automática.
+Os testes cobrem matriz e spawn, colisões, corner-sliding nos dois eixos, saída e bloqueio dos ossos, explosões, reação em cadeia, caixas, partículas, melhorias, vitória, reinício, tempo, pausa e o contrato dos arquivos de arte. `build` também verifica os tipos antes de gerar a pasta `dist/`.
 
-## Arquivos principais
+Abra o endereço mostrado pela prévia para conferir o build. A pasta `dist/` pode ser publicada em hospedagem estática, inclusive GitHub Pages. Os caminhos relativos permitem hospedar em subdiretórios. A publicação não é automática.
 
-- `index.html`: página, desenhos, áudio e lógica original do jogo.
-- `src/styles.css`: estilos Tailwind e fontes locais.
-- `tailwind.config.js`: classes usadas pela página e extensões de estilo.
-- `vite.config.js`: configuração de desenvolvimento e build.
-- `package-lock.json`: versões das dependências para instalações reproduzíveis com `npm ci`.
+O bundle inclui o motor Phaser completo; o Vite pode emitir um aviso de tamanho de chunk. Isso não impede o build ou a execução.
+
+## Trabalhar com a arte
+
+Veja [art/README.md](art/README.md) para editar o documento, os nomes das tags, o contrato de exportação e as instruções para Aseprite. Com o editor/CLI instalado:
+
+```sh
+npm run assets:export
+```
+
+Os PNG/JSON prontos estão versionados. **Aseprite é opcional para jogar e desenvolver**; só é necessário para exportar edições pelo editor. A arte inicial é uma base gerada em pixels e salva no formato nativo editável, e pode ser substituída pelo artista.
+
+## Estrutura
+
+- `index.html`: HUD, menus e controles de toque.
+- `src/main.ts`: inicialização e configuração do Phaser.
+- `src/scenes/GameScene.ts`: carregamento Aseprite, sprites/animações, input, renderização, pausa e passos fixos.
+- `src/game/GameModel.ts`: matriz, corner-sliding, colisões, inimigos, ossos e partículas, sem dependência de DOM ou Phaser.
+- `src/game/Audio.ts`: sintetizador e trilha Web Audio da versão original.
+- `src/game/atlas.ts`: validação dos frames e tags da arte.
+- `art/world.aseprite`: fonte editável dos sprites.
+- `public/assets/world.png` e `world.json`: spritesheet e metadados carregados pelo Phaser.
+- `tests/`: testes da simulação e dos arquivos Aseprite/exportados.
 
 As fontes Press Start 2P e Fredoka são distribuídas pelos pacotes Fontsource com suas respectivas licenças OFL em `node_modules/@fontsource/`.

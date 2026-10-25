@@ -1,0 +1,886 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>Arte da Fase 2 — Floresta Pré-Histórica</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        background: #202b26;
+        color: #eee9d4;
+        font-family: "Courier New", monospace;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 24px 12px;
+        display: flex;
+        justify-content: center;
+      }
+      .studio {
+        width: 100%;
+        max-width: 1050px;
+        border: 3px solid #101a14;
+        border-radius: 6px;
+        overflow: hidden;
+        background: #334238;
+        box-shadow: 0 14px 40px #0006;
+      }
+      header {
+        padding: 20px;
+        background: #17251c;
+        border-bottom: 2px solid #101a14;
+      }
+      h1 {
+        font-size: clamp(18px, 4vw, 25px);
+        color: #ffd66b;
+        margin: 6px 0 10px;
+      }
+      p {
+        line-height: 1.55;
+        margin: 6px 0;
+      }
+      .eyebrow {
+        color: #a7d6ad;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+      }
+      .toolbar {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 14px;
+        background: #29392e;
+      }
+      button {
+        font:
+          700 13px "Courier New",
+          monospace;
+        color: #fff4d1;
+        padding: 10px 14px;
+        border: 2px solid #101a14;
+        border-radius: 4px;
+        background: #4b6452;
+        cursor: pointer;
+        box-shadow: inset 0 2px #fff2;
+      }
+      button:hover {
+        background: #607f66;
+      }
+      button:focus-visible,
+      input:focus-visible {
+        outline: 3px solid #ffe082;
+        outline-offset: 3px;
+      }
+      .primary {
+        background: #337644;
+      }
+      .primary:hover {
+        background: #408b52;
+      }
+      .options {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        padding: 4px 16px 14px;
+        font-size: 13px;
+      }
+      label {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        cursor: pointer;
+      }
+      input {
+        accent-color: #ffd66b;
+      }
+      .panels {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 26px;
+        background-color: #28322d;
+        background-image:
+          linear-gradient(45deg, #202821 25%, transparent 25%),
+          linear-gradient(-45deg, #202821 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, #202821 75%),
+          linear-gradient(-45deg, transparent 75%, #202821 75%);
+        background-size: 20px 20px;
+        background-position:
+          0 0,
+          0 10px,
+          10px -10px,
+          -10px 0;
+      }
+      section {
+        max-width: 100%;
+      }
+      h2 {
+        font-size: 15px;
+        margin: 0 0 12px;
+        color: #c8e7b7;
+      }
+      canvas {
+        display: block;
+        image-rendering: pixelated;
+        width: 720px;
+        max-width: 100%;
+        height: auto;
+        border: 2px solid #101a14;
+        box-shadow: 0 4px 16px #0005;
+      }
+      #sheetCanvas {
+        width: 768px;
+      }
+      footer {
+        padding: 18px;
+        background: #1c2b21;
+        font-size: 13px;
+      }
+      .legend {
+        line-height: 1.8;
+        overflow-wrap: anywhere;
+      }
+      .note {
+        color: #c6d4bc;
+        font-size: 12px;
+      }
+      a {
+        color: #ffdb7c;
+      }
+      @media (max-width: 500px) {
+        body {
+          padding: 8px;
+        }
+        .panels {
+          padding: 10px;
+        }
+        .toolbar button {
+          flex: 1 1 160px;
+        }
+        header {
+          padding: 15px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="studio">
+      <header>
+        <div class="eyebrow">Estúdio de arte · Fase 2</div>
+        <h1>Floresta Pré-Histórica</h1>
+        <p>
+          Buraco de minhoca, clareiras, arbustos, fósseis e uma caverninha no
+          fim da jornada.
+        </p>
+        <p class="note">
+          Prévia visual em 16 bits. Os desafios e as regras desta fase serão
+          definidos depois.
+        </p>
+      </header>
+      <div class="toolbar">
+        <button id="download-sheet" class="primary">
+          Baixar spritesheet PNG
+        </button>
+        <button id="download-map">Baixar cenário PNG</button>
+        <button id="download-manifest">Baixar metadados JSON</button>
+      </div>
+      <div class="options">
+        <label
+          ><input id="cut-bushes" type="checkbox" /> Ver arbustos cortados e
+          trilobita</label
+        >
+        <label
+          ><input id="alternate-pose" type="checkbox" /> Ver segunda pose dos
+          personagens</label
+        >
+      </div>
+      <div class="panels">
+        <section aria-labelledby="map-title">
+          <h2 id="map-title">Cenário completo · 15×13 tiles</h2>
+          <canvas
+            id="mapCanvas"
+            width="480"
+            height="416"
+            role="img"
+            aria-label="Mapa da floresta com portal no canto inferior esquerdo e caverna no superior direito"
+            >Prévia do cenário pré-histórico.</canvas
+          >
+        </section>
+        <section aria-labelledby="sheet-title">
+          <h2 id="sheet-title">Spritesheet · 8×4 células de 32×32 px</h2>
+          <canvas
+            id="sheetCanvas"
+            width="256"
+            height="128"
+            role="img"
+            aria-label="Tiles de cenário, portal, caverna, itens e pares de poses de personagens pré-históricos"
+            >Folha de sprites da Fase 2.</canvas
+          >
+        </section>
+      </div>
+      <footer>
+        <p><b>Índices globais para o Phaser</b></p>
+        <div class="legend">
+          0–7: grama, samambaia, terra, arbusto, base cortada, árvore, rocha,
+          fóssil.<br />
+          8–15: portal (8–9), caverna de dois tiles (10–11), âmbar (12), pernil
+          (13), pena (14), folha (15).<br />
+          16–23: cão parado/latindo (16–17), gatos sabre laranja (18–19), siamês
+          (20–21), tricolor (22–23).<br />
+          24–31: raptor (24–25), triceratops (26–27), trilobita (28–29), gato
+          sabre cinza (30–31).
+        </div>
+        <p class="note">
+          O PNG da folha tem transparência ao redor dos objetos. Os tiles de
+          chão e o mapa completo incluem um fundo opaco. O xadrez pertence
+          apenas à página.
+        </p>
+        <p class="note">
+          O portal fica em (1,11); a entrada da caverna, em (13,1). O cão
+          aparece ao lado do portal, em (2,11), nesta prévia.
+        </p>
+        <p><a href="./index.html">Voltar ao jogo</a></p>
+      </footer>
+    </main>
+    <script id="phase2-data" type="application/json">
+      {
+        "version": 1,
+        "status": "visual-preview",
+        "image": "prehistoric_tileset.png",
+        "frameWidth": 32,
+        "frameHeight": 32,
+        "columns": 8,
+        "rows": 4,
+        "width": 256,
+        "height": 128,
+        "frames": {
+          "grass": 0,
+          "fern": 1,
+          "dirt": 2,
+          "bush": 3,
+          "bushCut": 4,
+          "tree": 5,
+          "rock": 6,
+          "fossil": 7,
+          "wormhole0": 8,
+          "wormhole1": 9,
+          "caveLeft": 10,
+          "caveRight": 11,
+          "amber": 12,
+          "meat": 13,
+          "feather": 14,
+          "leaf": 15,
+          "dogIdle": 16,
+          "dogBark": 17,
+          "saberOrange0": 18,
+          "saberOrange1": 19,
+          "saberSiamese0": 20,
+          "saberSiamese1": 21,
+          "saberCalico0": 22,
+          "saberCalico1": 23,
+          "raptor0": 24,
+          "raptor1": 25,
+          "triceratops0": 26,
+          "triceratops1": 27,
+          "trilobite0": 28,
+          "trilobite1": 29,
+          "saberGray0": 30,
+          "saberGray1": 31
+        },
+        "animations": [
+          {
+            "key": "wormhole",
+            "frames": [8, 9],
+            "frameRate": 4,
+            "repeat": -1
+          },
+          {
+            "key": "dogBark",
+            "frames": [16, 17],
+            "frameRate": 6,
+            "repeat": 0
+          },
+          {
+            "key": "saberOrange",
+            "frames": [18, 19],
+            "frameRate": 6,
+            "repeat": -1
+          },
+          {
+            "key": "saberSiamese",
+            "frames": [20, 21],
+            "frameRate": 6,
+            "repeat": -1
+          },
+          {
+            "key": "saberCalico",
+            "frames": [22, 23],
+            "frameRate": 6,
+            "repeat": -1
+          },
+          {
+            "key": "raptor",
+            "frames": [24, 25],
+            "frameRate": 10,
+            "repeat": -1
+          },
+          {
+            "key": "triceratops",
+            "frames": [26, 27],
+            "frameRate": 4,
+            "repeat": -1
+          },
+          {
+            "key": "trilobite",
+            "frames": [28, 29],
+            "frameRate": 8,
+            "repeat": -1
+          },
+          {
+            "key": "saberGray",
+            "frames": [30, 31],
+            "frameRate": 6,
+            "repeat": -1
+          }
+        ],
+        "map": {
+          "columns": 15,
+          "rows": 13,
+          "width": 480,
+          "height": 416,
+          "tiles": [
+            "TTTTTTTTTTTTTTT",
+            "T..B..D....B.CT",
+            "T.R.B.D.F.R...T",
+            "T.DDDDDDD...B.T",
+            "T.D.F.B.D.R.B.T",
+            "T.D...B.DDDDD.T",
+            "T.B.R...B...D.T",
+            "T...B.DDDDD.D.T",
+            "T.F...D.B.R.D.T",
+            "T.B.R.D...B.D.T",
+            "T...B.DDDDDDD.T",
+            "TW..B.........T",
+            "TTTTTTTTTTTTTTT"
+          ],
+          "spawn": {
+            "col": 1,
+            "row": 11
+          },
+          "goal": {
+            "col": 13,
+            "row": 1
+          },
+          "playerPreview": {
+            "col": 2,
+            "row": 11
+          },
+          "caveFootprint": {
+            "widthTiles": 2,
+            "heightTiles": 1,
+            "offsetCol": -1
+          },
+          "legend": {
+            "T": "tree",
+            "R": "rock",
+            "F": "fossil",
+            "B": "bush",
+            ".": "grass",
+            "D": "dirt",
+            "W": "wormhole",
+            "C": "cave"
+          }
+        },
+        "previewActors": [
+          {
+            "type": "saberOrange",
+            "col": 5,
+            "row": 3
+          },
+          {
+            "type": "raptor",
+            "col": 9,
+            "row": 5
+          },
+          {
+            "type": "triceratops",
+            "col": 11,
+            "row": 8
+          },
+          {
+            "type": "saberSiamese",
+            "col": 10,
+            "row": 1
+          },
+          {
+            "type": "trilobite",
+            "col": 4,
+            "row": 7,
+            "hiddenUnderBush": true
+          }
+        ]
+      }
+    </script>
+    <script>
+      (() => {
+        const TILE = 32;
+
+        // Função utilitária de pixel art
+        function px(ctx, x, y, w, h, color) {
+          ctx.fillStyle = color;
+          ctx.fillRect(
+            Math.floor(x),
+            Math.floor(y),
+            Math.floor(w),
+            Math.floor(h),
+          );
+        }
+
+        // ==========================================
+        // DESENHO DOS TILES E SPRITES (32x32)
+        // ==========================================
+
+        // 0. Grama Jurássica (Zelda ALTTP palette)
+        function drawGrass(ctx, ox, oy, variant = 0) {
+          px(ctx, ox, oy, 32, 32, "#347433");
+          // Textura sutil de musgo
+          px(ctx, ox + 2, oy + 4, 4, 2, "#2b612a");
+          px(ctx, ox + 18, oy + 20, 6, 2, "#2b612a");
+          // Tufos de grama estilo Zelda
+          const tufts = [
+            [6, 8],
+            [22, 12],
+            [10, 24],
+          ];
+          tufts.forEach(([tx, ty]) => {
+            px(ctx, ox + tx, oy + ty, 2, 4, "#4ea044");
+            px(ctx, ox + tx + 3, oy + ty + 1, 2, 3, "#4ea044");
+            px(ctx, ox + tx - 2, oy + ty + 2, 2, 2, "#245223");
+          });
+          if (variant === 1) {
+            // Samambaia / Flor pré-histórica
+            px(ctx, ox + 14, oy + 12, 6, 6, "#245223");
+            px(ctx, ox + 15, oy + 13, 4, 4, "#ff6f61");
+            px(ctx, ox + 16, oy + 14, 2, 2, "#ffee58");
+          }
+        }
+
+        // Trilha de terra batida (estilo Zelda)
+        function drawDirtPath(ctx, ox, oy) {
+          px(ctx, ox, oy, 32, 32, "#9c6b3b");
+          // Bordas pontilhadas de grama
+          px(ctx, ox, oy, 32, 3, "#347433");
+          px(ctx, ox + 4, oy + 3, 4, 2, "#347433");
+          px(ctx, ox + 20, oy + 3, 6, 2, "#347433");
+          // Pedrinhas e textura de solo
+          px(ctx, ox + 6, oy + 12, 4, 3, "#7d5229");
+          px(ctx, ox + 22, oy + 20, 5, 3, "#7d5229");
+          px(ctx, ox + 14, oy + 24, 3, 2, "#b88655");
+          px(ctx, ox + 10, oy + 8, 2, 2, "#b88655");
+        }
+
+        // Arbusto Destrutível (Zelda ALTTP Bush)
+        function drawBush(ctx, ox, oy, cut = false) {
+          if (cut) {
+            // Base do arbusto cortado
+            px(ctx, ox + 4, oy + 20, 24, 8, "#245223");
+            px(ctx, ox + 8, oy + 16, 4, 6, "#5c3c1e");
+            px(ctx, ox + 18, oy + 18, 4, 5, "#5c3c1e");
+            px(ctx, ox + 6, oy + 22, 4, 3, "#4ea044");
+            px(ctx, ox + 22, oy + 20, 4, 3, "#4ea044");
+            return;
+          }
+          // Sombra
+          px(ctx, ox + 2, oy + 24, 28, 6, "rgba(0,0,0,0.35)");
+          // Corpo escuro da folhagem
+          px(ctx, ox + 3, oy + 5, 26, 22, "#1b431c");
+          px(ctx, ox + 5, oy + 3, 22, 24, "#276228");
+          // Camada iluminada de folhas (pixel clusters)
+          px(ctx, ox + 6, oy + 5, 8, 8, "#469c3f");
+          px(ctx, ox + 16, oy + 4, 9, 8, "#469c3f");
+          px(ctx, ox + 8, oy + 13, 16, 9, "#398233");
+          // Brilhos de topo
+          px(ctx, ox + 8, oy + 6, 4, 3, "#7ed966");
+          px(ctx, ox + 18, oy + 6, 4, 3, "#7ed966");
+          px(ctx, ox + 12, oy + 14, 5, 3, "#7ed966");
+          // Frutinhas pré-históricas vermelhas
+          px(ctx, ox + 9, oy + 11, 3, 3, "#e53935");
+          px(ctx, ox + 21, oy + 13, 3, 3, "#e53935");
+          px(ctx, ox + 14, oy + 20, 3, 3, "#e53935");
+        }
+
+        // Copa de Árvore Pré-Histórica (Obstáculo / Borda estilo Zelda)
+        function drawTreeCanopy(ctx, ox, oy) {
+          // Tronco na base
+          px(ctx, ox + 10, oy + 22, 12, 10, "#4e342e");
+          px(ctx, ox + 12, oy + 22, 4, 10, "#6d4c41");
+          // Copa densa em camadas
+          px(ctx, ox + 1, oy + 2, 30, 22, "#143617");
+          px(ctx, ox + 3, oy + 1, 26, 20, "#1f5223");
+          px(ctx, ox + 5, oy + 3, 22, 15, "#2e7332");
+          px(ctx, ox + 8, oy + 5, 16, 10, "#4ea044");
+          // Cipós pendurados
+          px(ctx, ox + 6, oy + 20, 2, 7, "#388e3c");
+          px(ctx, ox + 24, oy + 19, 2, 8, "#388e3c");
+        }
+
+        // Rocha Vulcânica com Musgo (Pilar natural)
+        function drawMossRock(ctx, ox, oy) {
+          px(ctx, ox + 2, oy + 25, 28, 6, "rgba(0,0,0,0.4)");
+          px(ctx, ox + 3, oy + 6, 26, 22, "#373740");
+          px(ctx, ox + 5, oy + 4, 22, 20, "#525260");
+          px(ctx, ox + 7, oy + 5, 16, 10, "#717182");
+          // Rachaduras
+          px(ctx, ox + 14, oy + 14, 2, 10, "#222228");
+          // Musgo verde no topo
+          px(ctx, ox + 6, oy + 4, 18, 6, "#388e3c");
+          px(ctx, ox + 8, oy + 5, 12, 4, "#66bb6a");
+        }
+
+        // Fóssil de Costela de Dinossauro (Obstáculo temático)
+        function drawFossil(ctx, ox, oy) {
+          px(ctx, ox + 3, oy + 24, 26, 6, "rgba(0,0,0,0.35)");
+          // Espinha dorsal
+          px(ctx, ox + 4, oy + 18, 24, 5, "#bcaaa4");
+          // Costelas curvadas
+          for (let i = 0; i < 3; i++) {
+            let rx = ox + 6 + i * 8;
+            px(ctx, rx, oy + 6, 4, 18, "#d7ccc8");
+            px(ctx, rx + 1, oy + 7, 2, 14, "#f5f5f5");
+            px(ctx, rx, oy + 21, 4, 3, "#8d6e63");
+          }
+        }
+
+        // Buraco de Minhoca (Canto Inferior Esquerdo - Spawn)
+        function drawWormhole(ctx, ox, oy, frame = 0) {
+          px(ctx, ox + 2, oy + 4, 28, 24, "#1a0933");
+          px(ctx, ox + 4, oy + 6, 24, 20, "#3b1266");
+          px(ctx, ox + 7, oy + 9, 18, 14, "#6a1b9a");
+          px(ctx, ox + 10, oy + 11, 12, 10, "#00bcd4");
+          px(ctx, ox + 13, oy + 13, 6, 6, "#e0f7fa");
+          // Partículas espirais
+          const offset = frame * 3;
+          px(ctx, ox + 6 + offset, oy + 7, 3, 3, "#ea80fc");
+          px(ctx, ox + 22 - offset, oy + 21, 3, 3, "#80deea");
+          px(ctx, ox + 20, oy + 8 + offset, 2, 2, "#fff");
+        }
+
+        // Caverna Pré-Histórica (Canto Superior Direito - Objetivo)
+        // Complete 64×32 cave: doorway belongs to the right-hand goal tile.
+        function drawCave(ctx, ox, oy) {
+          px(ctx, ox + 1, oy + 4, 62, 28, "#3e2723");
+          px(ctx, ox + 4, oy + 2, 56, 27, "#5d4037");
+          px(ctx, ox + 7, oy + 3, 50, 9, "#795548");
+          px(ctx, ox + 3, oy + 1, 58, 5, "#2e7d32");
+          px(ctx, ox + 8, oy + 2, 44, 3, "#4caf50");
+          px(ctx, ox + 10, oy + 14, 18, 3, "#6d4c41");
+          px(ctx, ox + 26, oy + 20, 9, 3, "#4e342e");
+          px(ctx, ox + 40, oy + 13, 16, 19, "#0d0705");
+          px(ctx, ox + 42, oy + 11, 12, 2, "#0d0705");
+          px(ctx, ox + 46, oy + 21, 3, 3, "#ffeb3b");
+          // Cave painting: a paw to the left of the entrance.
+          px(ctx, ox + 17, oy + 17, 5, 4, "#ffcc80");
+          [
+            [15, 15],
+            [18, 13],
+            [21, 13],
+            [24, 15],
+          ].forEach(([x, y]) => px(ctx, ox + x, oy + y, 2, 2, "#ffcc80"));
+          // Torches flank the goal entrance.
+          [35, 59].forEach((x) => {
+            px(ctx, ox + x, oy + 19, 2, 7, "#8d6e63");
+            px(ctx, ox + x - 1, oy + 14, 4, 5, "#ff9800");
+            px(ctx, ox + x, oy + 15, 2, 3, "#ffeb3b");
+          });
+        }
+
+        // Shih Tzu Protagonista
+        function drawShihTzu(ctx, ox, oy, barking = false) {
+          px(ctx, ox + 6, oy + 25, 20, 5, "rgba(0,0,0,0.35)");
+          // Corpo branco e caramelo
+          px(ctx, ox + 8, oy + 15, 16, 11, "#f5f0e6");
+          px(ctx, ox + 10, oy + 17, 6, 6, "#b87a44"); // mancha
+          // Patinhas
+          px(ctx, ox + 9, oy + 25, 4, 4, "#f5f0e6");
+          px(ctx, ox + 19, oy + 25, 4, 4, "#f5f0e6");
+          // Coleira vermelha
+          px(ctx, ox + 9, oy + 15, 14, 2, "#d32f2f");
+          px(ctx, ox + 15, oy + 16, 2, 2, "#ffd54f");
+          // Cabeça fofa de Shih Tzu
+          px(ctx, ox + 7, oy + 5, 18, 11, "#f5f0e6");
+          px(ctx, ox + 6, oy + 6, 4, 9, "#9c6230"); // Orelha esq
+          px(ctx, ox + 22, oy + 6, 4, 9, "#9c6230"); // Orelha dir
+          px(ctx, ox + 8, oy + 6, 5, 5, "#b87a44"); // Mancha olho
+          px(ctx, ox + 19, oy + 6, 5, 5, "#b87a44");
+          // Olhos e focinho
+          px(ctx, ox + 11, oy + 9, 2, 3, "#111");
+          px(ctx, ox + 19, oy + 9, 2, 3, "#111");
+          px(ctx, ox + 15, oy + 11, 3, 2, "#222");
+          if (barking) {
+            px(ctx, ox + 15, oy + 13, 3, 3, "#e53935"); // Boca aberta
+            // Ondas de latido
+            px(ctx, ox + 27, oy + 7, 3, 2, "#fff");
+            px(ctx, ox + 28, oy + 11, 3, 2, "#fff");
+          }
+        }
+
+        // Gato Dente-de-Sabre (Variações: Laranja, Siamês, Tricolor)
+        function drawSaberCat(ctx, ox, oy, bodyColor, stripeColor, frame = 0) {
+          px(ctx, ox + 6, oy + 25, 20, 5, "rgba(0,0,0,0.35)");
+          // Rabo levantado
+          px(ctx, ox + 23, oy + 9, 3, 12, bodyColor);
+          // Corpo
+          px(ctx, ox + 8, oy + 15, 16, 10, bodyColor);
+          px(ctx, ox + 11, oy + 16, 3, 6, stripeColor);
+          px(ctx, ox + 17, oy + 16, 3, 6, stripeColor);
+          // Patas
+          px(ctx, ox + 8, oy + 24 + frame, 4, 4, bodyColor);
+          px(ctx, ox + 20, oy + 24 - frame, 4, 4, bodyColor);
+          // Cabeça + Orelhas pontudas
+          px(ctx, ox + 7, oy + 7, 15, 10, bodyColor);
+          px(ctx, ox + 7, oy + 4, 4, 4, stripeColor);
+          px(ctx, ox + 18, oy + 4, 4, 4, stripeColor);
+          // Olhos amarelos ferozes
+          px(ctx, ox + 9, oy + 10, 3, 3, "#ffeb3b");
+          px(ctx, ox + 16, oy + 10, 3, 3, "#ffeb3b");
+          px(ctx, ox + 10, oy + 11, 1, 2, "#000");
+          px(ctx, ox + 17, oy + 11, 1, 2, "#000");
+          // Presas de Dente-de-Sabre Brancas!
+          px(ctx, ox + 10, oy + 16, 2, 5, "#ffffff");
+          px(ctx, ox + 16, oy + 16, 2, 5, "#ffffff");
+        }
+
+        // Mini-Raptor (Inimigo Pré-Histórico Rápido)
+        function drawRaptor(ctx, ox, oy, frame = 0) {
+          px(ctx, ox + 6, oy + 25, 20, 5, "rgba(0,0,0,0.35)");
+          // Cauda longa
+          px(ctx, ox + 2, oy + 16, 8, 4, "#2e7d32");
+          // Corpo e pernas fortes
+          px(ctx, ox + 9, oy + 14, 13, 9, "#4caf50");
+          px(ctx, ox + 11, oy + 15, 8, 4, "#81c784");
+          px(ctx, ox + 11, oy + 23 + frame, 3, 6, "#388e3c");
+          px(ctx, ox + 18, oy + 23 - frame, 3, 6, "#388e3c");
+          // Cabeça alongada de dinossauro + crista vermelha
+          px(ctx, ox + 15, oy + 6, 12, 8, "#4caf50");
+          px(ctx, ox + 15, oy + 4, 6, 3, "#e53935"); // Penacho
+          px(ctx, ox + 21, oy + 8, 2, 2, "#ffeb3b"); // Olho
+          // Dentes serrilhados
+          px(ctx, ox + 20, oy + 13, 6, 2, "#fff");
+        }
+
+        // Bebê Triceratops
+        function drawTriceratops(ctx, ox, oy, frame = 0) {
+          px(ctx, ox + 5, oy + 25, 22, 5, "rgba(0,0,0,0.35)");
+          // Corpo robusto
+          px(ctx, ox + 7, oy + 13, 18, 12, "#fb8c00");
+          px(ctx, ox + 8, oy + 24 + frame, 4, 4, "#ef6c00");
+          px(ctx, ox + 20, oy + 24 - frame, 4, 4, "#ef6c00");
+          // Escudo ósseo da cabeça (Frill)
+          px(ctx, ox + 6, oy + 5, 14, 12, "#f57c00");
+          px(ctx, ox + 8, oy + 7, 10, 8, "#ffb74d");
+          // 3 Chifres brancos
+          px(ctx, ox + 4, oy + 12, 4, 2, "#fff");
+          px(ctx, ox + 7, oy + 7, 4, 2, "#fff");
+          px(ctx, ox + 14, oy + 7, 4, 2, "#fff");
+          // Olho
+          px(ctx, ox + 10, oy + 12, 2, 2, "#111");
+        }
+
+        // Trilobita / Besouro Pré-Histórico (Escondido nos arbustos)
+        function drawTrilobite(ctx, ox, oy, frame = 0) {
+          px(ctx, ox + 8, oy + 10, 16, 14, "#5d4037");
+          px(ctx, ox + 10, oy + 8, 12, 16, "#795548");
+          // Segmentos da carapaça
+          px(ctx, ox + 10, oy + 12, 12, 2, "#3e2723");
+          px(ctx, ox + 10, oy + 16, 12, 2, "#3e2723");
+          px(ctx, ox + 10, oy + 20, 12, 2, "#3e2723");
+          // Olhos e antenas
+          px(ctx, ox + 11, oy + 9 + frame, 2, 2, "#ff5252");
+          px(ctx, ox + 19, oy + 9 - frame, 2, 2, "#ff5252");
+        }
+
+        // Power-ups Pré-Históricos
+        function drawPowerUp(ctx, ox, oy, type) {
+          if (type === "amber") {
+            // Osso dentro do Âmbar Dourado
+            px(ctx, ox + 7, oy + 6, 18, 20, "#ff8f00");
+            px(ctx, ox + 9, oy + 8, 14, 16, "#ffc107");
+            px(ctx, ox + 12, oy + 14, 8, 4, "#fff8e1"); // Osso interno
+          } else if (type === "meat") {
+            // Pernil de Dinossauro
+            px(ctx, ox + 6, oy + 14, 20, 4, "#fff"); // Osso
+            px(ctx, ox + 10, oy + 8, 14, 14, "#bf360c");
+            px(ctx, ox + 12, oy + 10, 10, 10, "#e64a19");
+          } else if (type === "feather") {
+            // Pena de Velocidade
+            px(ctx, ox + 12, oy + 6, 8, 18, "#00e5ff");
+            px(ctx, ox + 14, oy + 8, 4, 14, "#e0f7fa");
+            px(ctx, ox + 15, oy + 22, 2, 5, "#fff");
+          }
+        }
+
+        function drawLeaf(ctx, ox, oy) {
+          px(ctx, ox + 9, oy + 13, 15, 6, "#245223");
+          px(ctx, ox + 12, oy + 10, 10, 6, "#66bb6a");
+          px(ctx, ox + 10, oy + 16, 10, 5, "#4ea044");
+          px(ctx, ox + 8, oy + 19, 5, 2, "#9c6b3b");
+        }
+
+        const manifest = JSON.parse(
+          document.getElementById("phase2-data").textContent,
+        );
+        const sheetCanvas = document.getElementById("sheetCanvas");
+        const mapCanvas = document.getElementById("mapCanvas");
+        const sctx = sheetCanvas.getContext("2d");
+        const mctx = mapCanvas.getContext("2d");
+        sctx.imageSmoothingEnabled = false;
+        mctx.imageSmoothingEnabled = false;
+        function slot(name, draw, ...args) {
+          const index = manifest.frames[name];
+          draw(sctx, (index % 8) * TILE, Math.floor(index / 8) * TILE, ...args);
+        }
+        function buildSpritesheet() {
+          sctx.clearRect(0, 0, sheetCanvas.width, sheetCanvas.height);
+          slot("grass", drawGrass);
+          slot("fern", drawGrass, 1);
+          slot("dirt", drawDirtPath);
+          slot("bush", drawBush, false);
+          slot("bushCut", drawBush, true);
+          slot("tree", drawTreeCanopy);
+          slot("rock", drawMossRock);
+          slot("fossil", drawFossil);
+          slot("wormhole0", drawWormhole, 0);
+          slot("wormhole1", drawWormhole, 1);
+          slot("caveLeft", drawCave);
+          slot("amber", drawPowerUp, "amber");
+          slot("meat", drawPowerUp, "meat");
+          slot("feather", drawPowerUp, "feather");
+          slot("leaf", drawLeaf);
+          slot("dogIdle", drawShihTzu, false);
+          slot("dogBark", drawShihTzu, true);
+          for (const [name, body, stripe] of [
+            ["saberOrange", "#ef6c00", "#bf360c"],
+            ["saberSiamese", "#d7ccc8", "#4e342e"],
+            ["saberCalico", "#fafafa", "#ff8f00"],
+            ["saberGray", "#616161", "#212121"],
+          ]) {
+            slot(name + "0", drawSaberCat, body, stripe, 0);
+            slot(name + "1", drawSaberCat, body, stripe, 1);
+          }
+          for (const [name, draw] of [
+            ["raptor", drawRaptor],
+            ["triceratops", drawTriceratops],
+            ["trilobite", drawTrilobite],
+          ]) {
+            slot(name + "0", draw, 0);
+            slot(name + "1", draw, 1);
+          }
+        }
+        function stamp(name, col, row) {
+          const index = manifest.frames[name];
+          mctx.drawImage(
+            sheetCanvas,
+            (index % 8) * TILE,
+            Math.floor(index / 8) * TILE,
+            TILE,
+            TILE,
+            col * TILE,
+            row * TILE,
+            TILE,
+            TILE,
+          );
+        }
+        function buildMapPreview() {
+          mctx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
+          const cut = document.getElementById("cut-bushes").checked;
+          const pose = document.getElementById("alternate-pose").checked
+            ? 1
+            : 0;
+          const map = manifest.map.tiles;
+          // Two passes keep the cave's left half above the previously drawn ground.
+          for (let row = 0; row < 13; row++)
+            for (let col = 0; col < 15; col++) {
+              stamp(
+                map[row][col] === "D"
+                  ? "dirt"
+                  : (col + row) % 3 === 0
+                    ? "fern"
+                    : "grass",
+                col,
+                row,
+              );
+            }
+          for (let row = 0; row < 13; row++)
+            for (let col = 0; col < 15; col++) {
+              const tile = map[row][col];
+              const name = {
+                T: "tree",
+                R: "rock",
+                F: "fossil",
+                B: cut ? "bushCut" : "bush",
+                W: "wormhole" + pose,
+              }[tile];
+              if (name) stamp(name, col, row);
+              if (tile === "C") {
+                stamp("caveLeft", col - 1, row);
+                stamp("caveRight", col, row);
+              }
+            }
+          stamp(
+            pose ? "dogBark" : "dogIdle",
+            manifest.map.playerPreview.col,
+            manifest.map.playerPreview.row,
+          );
+          for (const actor of manifest.previewActors) {
+            if (actor.hiddenUnderBush && !cut) continue;
+            stamp(actor.type + pose, actor.col, actor.row);
+          }
+        }
+        function downloadCanvas(canvasId, filename) {
+          const link = document.createElement("a");
+          link.download = filename;
+          link.href = document.getElementById(canvasId).toDataURL("image/png");
+          link.click();
+        }
+        document
+          .getElementById("download-sheet")
+          .addEventListener("click", () =>
+            downloadCanvas("sheetCanvas", "prehistoric_tileset.png"),
+          );
+        document
+          .getElementById("download-map")
+          .addEventListener("click", () =>
+            downloadCanvas("mapCanvas", "stage2_map_preview.png"),
+          );
+        document
+          .getElementById("download-manifest")
+          .addEventListener("click", () => {
+            const url = URL.createObjectURL(
+              new Blob([JSON.stringify(manifest, null, 2) + "\n"], {
+                type: "application/json",
+              }),
+            );
+            const link = document.createElement("a");
+            link.download = "prehistoric_tileset.json";
+            link.href = url;
+            link.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+          });
+        document
+          .getElementById("cut-bushes")
+          .addEventListener("change", buildMapPreview);
+        document
+          .getElementById("alternate-pose")
+          .addEventListener("change", buildMapPreview);
+        buildSpritesheet();
+        buildMapPreview();
+      })();
+    </script>
+  </body>
+</html>

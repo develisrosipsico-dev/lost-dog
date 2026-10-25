@@ -68,6 +68,14 @@ npm run assets:export
 
 Os PNG/JSON prontos estão versionados. **Aseprite é opcional para jogar e desenvolver**; só é necessário para exportar edições pelo editor. A arte atual é uma adaptação da referência visual enviada, com fonte PNG e documento nativo editável. As variantes de gatos ainda usam uma pose por direção; os ciclos de caminhada do cão e do gato preto e branco têm quatro frames por direção.
 
+## Arte da Fase 2
+
+O estúdio `arte_fase2_zelda.html` prepara a **Floresta Pré-Histórica**: cenário com clareiras, portal e caverna, arbustos inteiros/cortados, gatos dentes-de-sabre, raptor, triceratops, trilobita e itens. Abra o arquivo no navegador ou use o caminho `/arte_fase2_zelda.html` pelo servidor de desenvolvimento.
+
+Os botões baixam uma folha PNG transparente de 32×32 px por frame, o cenário e metadados JSON. Os arquivos prontos estão em `public/assets/phase2/`. Esta entrega é uma prévia de arte; a Fase 2 jogável e seus desafios serão definidos depois.
+
+Veja [docs/fase-2-arte.md](docs/fase-2-arte.md) para os índices dos sprites, exportação e helpers TypeScript de carregamento no Phaser.
+
 ## Estrutura
 
 - `index.html`: HUD, menus e controles de toque.

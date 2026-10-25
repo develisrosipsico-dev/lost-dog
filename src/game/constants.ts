@@ -15,3 +15,7 @@ export const POWERUP = {
   BOMB_COUNT: "bomb",
 } as const;
 export const DIRECTIONS = ["up", "down", "left", "right"] as const;
+
+export const PLAYER_TILES_PER_SECOND = 3.5;
+export const PLAYER_SPEED = (PLAYER_TILES_PER_SECOND * TILE_SIZE) / 60;
+export const BONE_FUSE = 2;

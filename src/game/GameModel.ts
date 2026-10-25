@@ -1,4 +1,20 @@
-import { COLS, ROWS, TILE_SIZE, TILE, POWERUP, DIRECTIONS } from "./constants";
+import {
+  createBaseGrid,
+  generateLevel,
+  levelDefinition,
+  LEVELS,
+  cellKey,
+} from "./levels";
+import type { LevelId } from "./levels";
+import {
+  COLS,
+  ROWS,
+  TILE_SIZE,
+  TILE,
+  POWERUP,
+  PLAYER_SPEED,
+  BONE_FUSE,
+} from "./constants";
 import type {
   Position,
   Direction,
@@ -36,7 +52,10 @@ export class GameModel {
   paused = false;
   reason = "";
   globalTimer = 0;
-  timeLeft = 180;
+  levelId: LevelId = "1-1";
+  levelSeed = 0;
+  hiddenRewards: Record<string, PowerupKind> = {};
+  timeLeft = 120;
   timerElapsed = 0;
   screenShake = 0;
   grid: number[][] = [];
@@ -50,7 +69,7 @@ export class GameModel {
     x: 72,
     y: 552,
     size: 34,
-    speed: 2.55,
+    speed: PLAYER_SPEED,
     speedLevel: 1,
     lives: 3,
     maxBombs: 1,
@@ -83,33 +102,42 @@ export class GameModel {
     for (const key of Object.keys(this.keys)) this.keys[key] = false;
   }
 
-  initGrid() {
-    this.grid = [];
-    for (let r = 0; r < ROWS; r++) {
-      const row = [];
-      for (let c = 0; c < COLS; c++) {
-        if (r === 0 || r === ROWS - 1 || c === 0 || c === COLS - 1) {
-          row.push(TILE.WALL_SOLID);
-        } else if (r % 2 === 0 && c % 2 === 0) {
-          row.push(TILE.WALL_SOLID);
-        } else {
-          row.push(TILE.EMPTY);
-        }
-      }
-      this.grid.push(row);
-    }
-    // Casinha no canto superior direito (13, 1)
-    this.grid[1][COLS - 2] = TILE.GOAL_HOUSE;
+  get level() {
+    return levelDefinition(this.levelId);
+  }
+  get nextLevel() {
+    return LEVELS[LEVELS.findIndex((level) => level.id === this.levelId) + 1];
   }
 
-  startNewGame() {
-    this.initGrid();
+  initGrid() {
+    this.grid = createBaseGrid();
+  }
+
+  restartLevel() {
+    this.startNewGame(this.levelId, this.levelSeed);
+  }
+
+  advanceLevel() {
+    if (this.state !== "VICTORY" || !this.nextLevel) return false;
+    this.startNewGame(this.nextLevel.id, this.levelSeed);
+    return true;
+  }
+
+  startNewGame(
+    levelId: LevelId = this.levelId,
+    seed = Math.floor(this.random() * 4294967296),
+  ) {
+    const generated = generateLevel(levelId, seed);
+    this.levelId = levelId;
+    this.levelSeed = generated.seed;
+    this.grid = generated.grid;
+    this.hiddenRewards = { ...generated.rewards };
     this.state = "PLAYING";
 
     // Posiciona cachorrinho no canto inferior esquerdo (1, 11)
     this.player.x = 1 * TILE_SIZE + TILE_SIZE / 2;
     this.player.y = (ROWS - 2) * TILE_SIZE + TILE_SIZE / 2;
-    this.player.speed = 2.55;
+    this.player.speed = PLAYER_SPEED;
     this.player.speedLevel = 1;
     this.player.lives = 3;
     this.player.maxBombs = 1;
@@ -124,30 +152,8 @@ export class GameModel {
     this.powerups = [];
     this.enemies = [];
 
-    // Zonas livres obrigatórias (Canto inferior esquerdo e Canto superior direito)
-    const safeZones = [
-      { c: 1, r: ROWS - 2 },
-      { c: 2, r: ROWS - 2 },
-      { c: 1, r: ROWS - 3 },
-      { c: COLS - 2, r: 1 },
-      { c: COLS - 3, r: 1 },
-      { c: COLS - 2, r: 2 },
-    ];
-
-    for (let r = 1; r < ROWS - 1; r++) {
-      for (let c = 1; c < COLS - 1; c++) {
-        if (this.grid[r][c] === TILE.EMPTY) {
-          const isSafe = safeZones.some((z) => z.c === c && z.r === r);
-          if (!isSafe && this.random() < 0.66) {
-            this.grid[r][c] = TILE.BOX_CRATE;
-          }
-        }
-      }
-    }
-
     this.spawnAlleyCats();
-
-    this.timeLeft = 180;
+    this.timeLeft = this.level.time;
     this.timerElapsed = 0;
     this.globalTimer = 0;
     this.screenShake = 0;
@@ -166,32 +172,18 @@ export class GameModel {
   }
 
   spawnAlleyCats() {
-    const candidates = [];
-    for (let r = 1; r < ROWS - 1; r++) {
-      for (let c = 1; c < COLS - 1; c++) {
-        // Longe do canto inferior esquerdo onde o jogador nasce
-        const distFromSpawn = Math.hypot(c - 1, r - (ROWS - 2));
-        if (this.grid[r][c] === TILE.EMPTY && distFromSpawn > 4.5) {
-          candidates.push({ r, c });
-        }
-      }
-    }
-
-    candidates.sort(() => this.random() - 0.5);
-    const count = Math.min(5, candidates.length);
-
-    for (let i = 0; i < count; i++) {
-      const pt = candidates[i];
-      this.enemies.push({
-        x: pt.c * TILE_SIZE + TILE_SIZE / 2,
-        y: pt.r * TILE_SIZE + TILE_SIZE / 2,
-        size: 30,
-        speed: 1.45 + (i % 2) * 0.25,
-        dir: DIRECTIONS[Math.floor(this.random() * 4)],
-        animTime: this.random() * 10,
-        alive: true,
-      });
-    }
+    this.enemies = this.level.cats.map((spawn) => ({
+      x: spawn.col * TILE_SIZE + TILE_SIZE / 2,
+      y: spawn.row * TILE_SIZE + TILE_SIZE / 2,
+      size: 30,
+      speed: spawn.speed,
+      dir: spawn.dir,
+      breed: spawn.breed,
+      behavior: spawn.behavior,
+      animTime: 0,
+      alive: true,
+      target: null,
+    }));
   }
 
   spawnFloatingText(x: number, y: number, text: string, color = "#fbbf24") {
@@ -220,8 +212,8 @@ export class GameModel {
       row,
       x: col * TILE_SIZE + TILE_SIZE / 2,
       y: row * TILE_SIZE + TILE_SIZE / 2,
-      timer: 2.3,
-      maxTimer: 2.3,
+      timer: BONE_FUSE,
+      maxTimer: BONE_FUSE,
       range: this.player.bombRange,
       noteTimer: 0,
       playerCanExit: true,
@@ -317,6 +309,7 @@ export class GameModel {
   }
 
   destroyCrate(col: number, row: number) {
+    if (this.grid[row]?.[col] !== TILE.BOX_CRATE) return;
     this.grid[row][col] = TILE.EMPTY;
     const cx = col * TILE_SIZE + TILE_SIZE / 2;
     const cy = row * TILE_SIZE + TILE_SIZE / 2;
@@ -353,12 +346,19 @@ export class GameModel {
       });
     }
 
-    // 44% de chance de surgir um Power-up Deluxe
-    if (this.random() < 0.44) {
+    const rewardKey = cellKey({ col, row });
+    const guaranteed = this.hiddenRewards[rewardKey];
+    delete this.hiddenRewards[rewardKey];
+    // Reward alcoves always pay out. Other crates keep the original random drops.
+    if (guaranteed || this.random() < 0.44) {
       const r = this.random();
-      let type: PowerupKind = POWERUP.SPEED;
-      if (r < 0.36) type = POWERUP.RANGE;
-      else if (r < 0.72) type = POWERUP.BOMB_COUNT;
+      const type: PowerupKind =
+        guaranteed ??
+        (r < 0.36
+          ? POWERUP.RANGE
+          : r < 0.72
+            ? POWERUP.BOMB_COUNT
+            : POWERUP.SPEED);
 
       this.powerups.push({
         col,
@@ -709,64 +709,147 @@ export class GameModel {
   }
 
   updateCats(dt: number) {
-    this.enemies.forEach((cat) => {
-      if (!cat.alive) return;
+    const vector: Record<Direction, { x: number; y: number }> = {
+      up: { x: 0, y: -1 },
+      down: { x: 0, y: 1 },
+      left: { x: -1, y: 0 },
+      right: { x: 1, y: 0 },
+    };
+    const opposite: Record<Direction, Direction> = {
+      up: "down",
+      down: "up",
+      left: "right",
+      right: "left",
+    };
+    for (const cat of this.enemies) {
+      if (!cat.alive) continue;
       cat.animTime += dt * 7;
-
-      let dx = 0,
-        dy = 0;
-      if (cat.dir === "up") dy = -1;
-      if (cat.dir === "down") dy = 1;
-      if (cat.dir === "left") dx = -1;
-      if (cat.dir === "right") dx = 1;
-
-      const nextX = cat.x + dx * cat.speed * 60 * dt;
-      const nextY = cat.y + dy * cat.speed * 60 * dt;
-
-      if (!this.checkCollision(nextX, nextY, 13, cat)) {
+      let budget = cat.speed * 60 * dt;
+      for (let segment = 0; budget > 0 && segment < 4; segment++) {
+        if (!cat.target) {
+          const direction = this.pickNewCatDirection(cat);
+          if (!direction) break;
+          const move = vector[direction];
+          cat.target = {
+            col: Math.round((cat.x - 24) / TILE_SIZE) + move.x,
+            row: Math.round((cat.y - 24) / TILE_SIZE) + move.y,
+          };
+        }
+        const tx = cat.target.col * TILE_SIZE + 24,
+          ty = cat.target.row * TILE_SIZE + 24;
+        const dx = tx - cat.x,
+          dy = ty - cat.y,
+          distance = Math.hypot(dx, dy);
+        if (distance < 1e-7) {
+          cat.x = tx;
+          cat.y = ty;
+          cat.target = null;
+          continue;
+        }
+        const step = Math.min(distance, budget);
+        const nextX = cat.x + (dx / distance) * step,
+          nextY = cat.y + (dy / distance) * step;
+        if (this.checkCollision(nextX, nextY, 13, cat)) {
+          // Return along the same segment if a newly placed bone blocks it.
+          const move = vector[cat.dir];
+          cat.target = {
+            col: cat.target.col - move.x,
+            row: cat.target.row - move.y,
+          };
+          cat.dir = opposite[cat.dir];
+          break;
+        }
         cat.x = nextX;
         cat.y = nextY;
-        // Chance de mudar direção quando alinhado num cruzamento
-        const centerX =
-          Math.floor(cat.x / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
-        const centerY =
-          Math.floor(cat.y / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
-        if (
-          Math.hypot(cat.x - centerX, cat.y - centerY) < 2.2 &&
-          this.random() < 0.12
-        ) {
-          this.pickNewCatDirection(cat);
+        budget -= step;
+        if (distance <= step + 1e-7) {
+          cat.x = tx;
+          cat.y = ty;
+          cat.target = null;
         }
-      } else {
-        this.pickNewCatDirection(cat);
       }
-
-      // Contato com o cachorrinho
       if (
         Math.hypot(cat.x - this.player.x, cat.y - this.player.y) < 25 &&
         this.player.invulnerableTimer <= 0
-      ) {
+      )
         this.damagePlayer();
-      }
-    });
+    }
   }
 
-  pickNewCatDirection(cat: Cat) {
+  hasLineOfSight(cat: Cat) {
+    const col = Math.round((cat.x - 24) / TILE_SIZE),
+      row = Math.round((cat.y - 24) / TILE_SIZE);
+    const playerCol = Math.floor(this.player.x / TILE_SIZE),
+      playerRow = Math.floor(this.player.y / TILE_SIZE);
+    if (col !== playerCol && row !== playerRow) return false;
+    const dx = Math.sign(playerCol - col),
+      dy = Math.sign(playerRow - row);
+    if (dx === 0 && dy === 0) return false;
+    let c = col,
+      r = row;
+    while (c !== playerCol || r !== playerRow) {
+      c += dx;
+      r += dy;
+      const tile = this.grid[r]?.[c];
+      if (
+        tile === undefined ||
+        tile === TILE.WALL_SOLID ||
+        tile === TILE.BOX_CRATE ||
+        this.activeBombs.some((b) => b.col === c && b.row === r)
+      )
+        return false;
+    }
+    return true;
+  }
+
+  pickNewCatDirection(cat: Cat): Direction | null {
     const dirs: { name: Direction; dx: number; dy: number }[] = [
       { name: "up", dx: 0, dy: -1 },
       { name: "down", dx: 0, dy: 1 },
       { name: "left", dx: -1, dy: 0 },
       { name: "right", dx: 1, dy: 0 },
     ];
-    const openDirs = dirs.filter(
+    const opposite: Record<Direction, Direction> = {
+      up: "down",
+      down: "up",
+      left: "right",
+      right: "left",
+    };
+    const open = dirs.filter(
       (d) =>
-        !this.checkCollision(cat.x + d.dx * 16, cat.y + d.dy * 16, 12, cat),
+        !this.checkCollision(
+          cat.x + d.dx * TILE_SIZE,
+          cat.y + d.dy * TILE_SIZE,
+          13,
+          cat,
+        ),
     );
-    if (openDirs.length > 0) {
-      cat.dir = openDirs[Math.floor(this.random() * openDirs.length)].name;
-    } else {
-      cat.dir = dirs[Math.floor(this.random() * 4)].name;
+    if (!open.length) return null;
+    const behavior = cat.behavior ?? "wander";
+    let chosen: Direction | undefined;
+    if (behavior === "linear") {
+      chosen =
+        open.find((d) => d.name === cat.dir)?.name ??
+        open.find((d) => d.name === opposite[cat.dir])?.name;
+      if (!chosen) return null;
+    } else if (behavior === "hunter" && this.hasLineOfSight(cat)) {
+      const direction: Direction =
+        Math.floor(cat.y / TILE_SIZE) === Math.floor(this.player.y / TILE_SIZE)
+          ? this.player.x > cat.x
+            ? "right"
+            : "left"
+          : this.player.y > cat.y
+            ? "down"
+            : "up";
+      chosen = open.find((d) => d.name === direction)?.name;
     }
+    if (!chosen) {
+      const forward = open.filter((d) => d.name !== opposite[cat.dir]);
+      const choices = forward.length ? forward : open;
+      chosen = choices[Math.floor(this.random() * choices.length)].name;
+    }
+    cat.dir = chosen;
+    return chosen;
   }
 
   defeatCat(cat: Cat) {
@@ -792,6 +875,7 @@ export class GameModel {
   }
 
   damagePlayer() {
+    if (this.state !== "PLAYING" || this.player.invulnerableTimer > 0) return;
     this.player.lives--;
     this.player.invulnerableTimer = 2.0;
     this.screenShake = 10;

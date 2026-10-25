@@ -5,6 +5,8 @@ import { COLS, ROWS, TILE, TILE_SIZE, POWERUP } from "../src/game/constants";
 function game() {
   const model = new GameModel(undefined, () => 0.99);
   model.startNewGame();
+  model.initGrid(); // Isolate movement/mechanics from the designed level blockers.
+  model.hiddenRewards = {};
   model.enemies = [];
   return model;
 }
@@ -23,7 +25,7 @@ describe("15×13 simulation", () => {
     expect(model.grid[1][13]).toBe(TILE.GOAL_HOUSE);
     expect([model.player.x, model.player.y]).toEqual([72, 552]);
   });
-  it("never puts crates in the six safe cells, even with maximum crate density", () => {
+  it("never puts crates in the spawn cells in the tutorial", () => {
     const model = new GameModel(undefined, () => 0);
     model.startNewGame();
     for (const [col, row] of [
@@ -31,13 +33,11 @@ describe("15×13 simulation", () => {
       [2, 11],
       [1, 10],
       [13, 1],
-      [12, 1],
-      [13, 2],
     ]) {
       expect(model.grid[row][col]).not.toBe(TILE.BOX_CRATE);
     }
   });
-  it("moves at 153 px/s and normalizes diagonal speed", () => {
+  it("moves at 168 px/s and normalizes diagonal speed", () => {
     const a = game();
     const b = game();
     a.grid[2][2] = b.grid[2][2] = TILE.EMPTY;
@@ -48,8 +48,8 @@ describe("15×13 simulation", () => {
     b.keys.KeyS = true;
     tick(a, 0.1);
     tick(b, 0.1);
-    expect(a.player.x - 72).toBeCloseTo(15.3);
-    expect(Math.hypot(b.player.x - 72, b.player.y - 72)).toBeCloseTo(15.3, 2);
+    expect(a.player.x - 72).toBeCloseTo(16.8);
+    expect(Math.hypot(b.player.x - 72, b.player.y - 72)).toBeCloseTo(16.8, 2);
   });
   it("slides vertically around a pillar when entering a horizontal corridor", () => {
     const model = game();
@@ -113,10 +113,10 @@ describe("bones, particles and powerups", () => {
     model.dropBoneBomb();
     expect(model.activeBombs).toHaveLength(1);
   });
-  it("detonates after 2.3 seconds and creates cross-shaped blasts with particles", () => {
+  it("detonates after 2.0 seconds and creates cross-shaped blasts with particles", () => {
     const model = game();
     model.dropBoneBomb();
-    tick(model, 2.2);
+    tick(model, 1.9);
     expect(model.activeBombs).toHaveLength(1);
     tick(model, 0.15);
     expect(model.activeBombs).toHaveLength(0);
@@ -207,7 +207,7 @@ describe("lifecycle and pause", () => {
     model.update(1 / 60);
     expect(model.state).toBe("VICTORY");
     tick(model, 2);
-    expect(model.timeLeft).toBe(180);
+    expect(model.timeLeft).toBe(120);
   });
   it("loses when time expires, and restart resets the match", () => {
     const model = game();
@@ -217,7 +217,7 @@ describe("lifecycle and pause", () => {
     model.startNewGame();
     expect([model.state, model.timeLeft, model.player.lives]).toEqual([
       "PLAYING",
-      180,
+      120,
       3,
     ]);
     expect(model.activeBombs).toHaveLength(0);

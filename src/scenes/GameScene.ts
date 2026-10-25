@@ -194,7 +194,10 @@ export class GameScene extends Phaser.Scene {
       this.audio.startBGM();
       this.helpOpen = false;
       this.hidden = false;
-      this.model.startNewGame();
+      if (this.model.state === "VICTORY") {
+        if (!this.model.advanceLevel()) this.model.startNewGame("1-1");
+      } else if (this.model.state === "GAMEOVER") this.model.restartLevel();
+      else this.model.startNewGame("1-1");
       this.accumulator = 0;
       this.tileTypes = [];
       element("help-modal").classList.add("hidden");
@@ -214,6 +217,7 @@ export class GameScene extends Phaser.Scene {
     this.listen(element("btn-help"), "click", () => {
       this.helpOpen = true;
       element("help-modal").classList.remove("hidden");
+      element("help-modal").scrollTop = 0;
       this.setPaused();
     });
     this.listen(element("btn-close-help"), "click", () => {
@@ -303,7 +307,13 @@ export class GameScene extends Phaser.Scene {
     const coats = ["cat", "cat-orange", "cat-siamese", "cat-calico"];
     for (const [index, cat] of model.enemies.entries()) {
       if (cat.alive) {
-        const variant = `${coats[index % coats.length]}-${cat.dir}`;
+        const coat =
+          cat.breed === "tuxedo"
+            ? "cat"
+            : cat.breed
+              ? `cat-${cat.breed}`
+              : coats[index % coats.length];
+        const variant = `${coat}-${cat.dir}`;
         const animation = this.anims.exists(variant)
           ? variant
           : `cat-${cat.dir}`;
@@ -393,6 +403,11 @@ export class GameScene extends Phaser.Scene {
 
   private updateHud() {
     const model = this.model;
+    element("hud-level").textContent = `${model.levelId} — ${model.level.name}`;
+    element("hud-enemies").textContent =
+      `${model.state === "START" ? model.level.cats.length : model.enemies.filter((cat) => cat.alive).length} GATOS`;
+    element("level-hint").textContent = model.level.hint;
+    element("overlay-level").textContent = `FASE 1 · NÍVEL ${model.levelId}`;
     element("hud-lives").textContent =
       "❤️".repeat(Math.max(0, model.player.lives)) || "💀";
     element("hud-range").textContent = String(model.player.bombRange);
@@ -404,15 +419,23 @@ export class GameScene extends Phaser.Scene {
     if (model.state !== "VICTORY" && model.state !== "GAMEOVER") return;
     const won = model.state === "VICTORY";
     element("overlay-icon").textContent = won ? "🐶🏡" : "🌧️🐾";
+    const next = model.nextLevel;
     element("overlay-title").textContent = won
-      ? "DOCE LAR ALCANÇADO!"
+      ? next
+        ? "CAMINHO ABERTO!"
+        : "DOCE LAR ALCANÇADO!"
       : "AINDA PERDIDO...";
     element("overlay-desc").textContent = won
-      ? `O cãozinho chegou à sua casinha! Tempo restante: ${model.timeLeft} segundos.`
-      : `${model.reason} Não desista! Sua casinha continua esperando no canto superior direito.`;
+      ? next
+        ? `Nível ${model.levelId} concluído! Próxima parada: ${next.name}. ${next.hint}`
+        : `O cãozinho atravessou os três níveis e chegou em casa! Tempo restante: ${model.timeLeft} segundos.`
+      : `${model.reason} Tente outra vez o nível ${model.levelId}: ${model.level.name}.`;
     element("btn-start").textContent = won
-      ? "JOGAR NOVAMENTE"
+      ? next
+        ? `PRÓXIMO NÍVEL: ${next.id}`
+        : "JOGAR DESDE O INÍCIO"
       : "TENTAR NOVAMENTE";
     element("game-overlay").classList.remove("hidden");
+    element("game-overlay").scrollTop = 0;
   }
 }

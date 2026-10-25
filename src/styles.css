@@ -24,3 +24,26 @@ button:disabled {
   cursor: wait;
   opacity: 0.6;
 }
+
+/* Keep longer level summaries/manuals reachable inside small mobile canvases. */
+#game-overlay,
+#help-modal {
+  justify-content: flex-start;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+#game-overlay > *,
+#help-modal > * {
+  flex-shrink: 0;
+}
+
+#game-overlay > :first-child,
+#help-modal > :first-child {
+  margin-top: auto;
+}
+
+#game-overlay > :last-child,
+#help-modal > :last-child {
+  margin-bottom: auto;
+}

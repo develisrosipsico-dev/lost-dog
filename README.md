@@ -2,7 +2,7 @@
 
 Jogo 2D de labirinto em **Phaser 3 + TypeScript**, inspirado em Bomberman. O cão começa no canto inferior esquerdo e precisa chegar à casinha no canto superior direito.
 
-A migração preserva a matriz **15×13**, tiles de **48 px**, resolução lógica **720×624**, corner-sliding, ossos com explosão em cruz e reação em cadeia, caixas, gatos, powerups, três vidas e 180 segundos. As partículas mantêm velocidade, gravidade e duração da versão original; agora são sprites do Phaser. A música e os efeitos continuam usando Web Audio.
+A migração preserva a matriz **15×13**, tiles de **48 px**, resolução lógica **720×624**, corner-sliding, ossos com explosão em cruz e reação em cadeia, caixas, gatos, powerups, três vidas por nível e relógios de 120/120/90 segundos. As partículas mantêm velocidade, gravidade e duração da versão original; agora são sprites do Phaser. A música e os efeitos continuam usando Web Audio.
 
 O antigo gerador de texturas foi substituído por **PNG + JSON de spritesheet Aseprite**, com animações direcionais, cão branco e caramelo, quatro pelagens de gatos e arte editável em `art/world.aseprite`. As fontes e imagens são locais; o jogo não usa CDN, backend, banco de dados ou credenciais.
 
@@ -20,6 +20,14 @@ npm run dev
 Se já tiver o repositório, atualize sua cópia, entre na pasta e execute `npm ci` e `npm run dev`. Abra no navegador o endereço mostrado pelo Vite. Deixe o terminal aberto; `Ctrl+C` encerra o servidor. `npm start` também inicia o desenvolvimento.
 
 Com nvm instalado, `nvm install` e `nvm use` selecionam a versão de `.nvmrc`.
+
+## Fase 1
+
+A aventura agora tem três níveis sequenciais: **1-1 — O Portão do Quintal**, **1-2 — Beco dos Gatos** e **1-3 — Noite na Vizinhança**. Há 15/28/45 caixas e 2/4/6 gatos, respectivamente. A vitória libera o próximo nível; a derrota repete o mesmo mapa. Cada nível reinicia vidas e melhorias.
+
+Os gatos laranjas patrulham em linha, os pretos e brancos e tricolores escolhem esquinas, e os siameses rápidos perseguem quando enxergam o cão na mesma linha ou coluna. Os mapas têm gargalos planejados, becos com melhorias garantidas e bloqueios secundários que variam por seed. O cão anda a 3,5 tiles/s e o osso apita por 2 s antes de explodir.
+
+Veja [docs/fase-1.md](docs/fase-1.md) para a matemática da grade, critérios de geração, IA e validação dos mapas.
 
 ## Controles
 
@@ -44,7 +52,7 @@ npm run build
 npm run preview
 ```
 
-Os testes cobrem matriz e spawn, colisões, corner-sliding nos dois eixos, saída e bloqueio dos ossos, explosões, reação em cadeia, caixas, partículas, melhorias, vitória, reinício, tempo, pausa e o contrato dos arquivos de arte. `build` também verifica os tipos antes de gerar a pasta `dist/`.
+Os testes cobrem 750 mapas gerados, travessias com explosões e fuga, progressão entre níveis, IA e visão dos gatos, além de matriz e spawn, colisões, corner-sliding nos dois eixos, saída e bloqueio dos ossos, explosões, reação em cadeia, caixas, partículas, melhorias, vitória, reinício, tempo, pausa e o contrato dos arquivos de arte. `build` também verifica os tipos antes de gerar a pasta `dist/`.
 
 Abra o endereço mostrado pela prévia para conferir o build. A pasta `dist/` pode ser publicada em hospedagem estática, inclusive GitHub Pages. Os caminhos relativos permitem hospedar em subdiretórios. A publicação não é automática.
 
@@ -66,6 +74,7 @@ Os PNG/JSON prontos estão versionados. **Aseprite é opcional para jogar e dese
 - `src/main.ts`: inicialização e configuração do Phaser.
 - `src/scenes/GameScene.ts`: carregamento Aseprite, sprites/animações, input, renderização, pausa e passos fixos.
 - `src/game/GameModel.ts`: matriz, corner-sliding, colisões, inimigos, ossos e partículas, sem dependência de DOM ou Phaser.
+- `src/game/levels.ts`: templates, seeds, spawns, recompensas e análise de rotas.
 - `src/game/Audio.ts`: sintetizador e trilha Web Audio da versão original.
 - `src/game/atlas.ts`: validação dos frames e tags da arte.
 - `art/world.aseprite`: fonte editável dos sprites.

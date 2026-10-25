@@ -18,7 +18,12 @@ export interface Player extends Position {
   dustTimer: number;
   invulnerableTimer: number;
 }
+export type CatBreed = "orange" | "tuxedo" | "calico" | "siamese";
+export type CatBehavior = "linear" | "wander" | "hunter";
 export interface Cat extends Position {
+  breed?: CatBreed;
+  behavior?: CatBehavior;
+  target?: { col: number; row: number } | null;
   size: number;
   speed: number;
   dir: Direction;
